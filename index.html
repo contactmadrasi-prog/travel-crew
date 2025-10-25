@@ -3,1004 +3,1245 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vishnu Priya G - Swiggy CREW Application</title>
-    <!-- Chosen Palette: Swiggy Corporate & Premium (#FC8019, #1c1c1c, #FFFFFF, #f3f4f6) -->
-    <!-- Application Structure Plan: A single-page, scrolling "Interactive Dossier." Uses a sticky nav for easy section-hopping. Key interaction: a filterable, searchable portfolio dashboard. Clicking an item hides the main portfolio and shows a dedicated "detail view" within the same page, simulating navigation without leaving the SPA. This structure allows focused exploration of individual itineraries while keeping the core experience unified. -->
-    <!-- Visualization & Content Choices: 
-        - Report Info: "Editor's Note" -> Goal: Inform/Engage -> Viz: Styled text block -> Interaction: None.
-        - Report Info: "Toolkit" & "Featured Stories" -> Goal: Inform/Organize -> Viz: Tailwind cards/grid -> Interaction: Hover.
-        - Report Info: ~40 Itinerary CSVs -> Goal: Explore/Organize/Compare -> Viz: 1) Chart.js Bar Chart (Region count) 2) Filterable JS grid ("Itinerary Cards") 3) JS-powered Detail View (replacing modal) for day-by-day details -> Interaction: Chart hover, filter clicks, search input, card click (to show detail view), back button click (to return to grid). Justification: Interactive dashboard allows exploration; dedicated detail view provides focus without multi-page complexity.
-        - Report Info: "Differentiator" -> Goal: Persuade -> Viz: High-contrast section -> Interaction: None.
-        - Report Info: `image_8a4980.png` -> Goal: Engage -> Viz: Main image for "Field Notes" -> Interaction: None.
-    -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
-    
+    <title>Vishnu Priya G - Swiggy CREW Travel Curator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Playfair+Display:wght@700;900&display=swap');
-        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f3f4f6;
-            color: #4b5563;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #333;
+            overflow-x: hidden;
         }
 
-        h1, h2, h3 {
+        /* Page Indicator */
+        .page-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(252, 128, 25, 0.95);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 700;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(252, 128, 25, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .page-indicator:hover {
+            transform: scale(1.05);
+        }
+
+        /* Navigation Dots */
+        .nav-dots {
+            position: fixed;
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .nav-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-dot:hover {
+            background: rgba(252, 128, 25, 0.6);
+            transform: scale(1.3);
+        }
+
+        .nav-dot.active {
+            background: #FC8019;
+            width: 16px;
+            height: 16px;
+        }
+
+        .nav-dot::after {
+            content: attr(data-label);
+            position: absolute;
+            right: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .nav-dot:hover::after {
+            opacity: 1;
+        }
+
+        /* Book Container */
+        .book-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px 120px;
+            position: relative;
+        }
+
+        .page {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+            min-height: 85vh;
+            display: none;
+            animation: pageSlideIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes pageSlideIn {
+            from { 
+                opacity: 0; 
+                transform: translateX(100px) rotateY(-15deg);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateX(0) rotateY(0);
+            }
+        }
+
+        .page-content {
+            padding: 60px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Animated Background Elements */
+        .page::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(252,128,25,0.05) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Cover Page */
+        .cover {
+            background: linear-gradient(135deg, #1c1c1c 0%, #2a2a2a 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            min-height: 85vh;
+            position: relative;
+            overflow: hidden;
+            border-radius: 20px;
+        }
+
+        .cover::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(252,128,25,0.15) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+        }
+
+        .cover-label {
+            color: #FC8019;
+            font-size: 16px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 40px;
+            animation: fadeInDown 1s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .cover-name {
             font-family: 'Playfair Display', serif;
+            font-size: 84px;
+            font-weight: 900;
+            color: white;
+            line-height: 1.1;
+            margin-bottom: 30px;
+            animation: fadeInUp 1s ease 0.3s both;
+            text-shadow: 0 4px 30px rgba(252,128,25,0.4);
+            position: relative;
+            z-index: 1;
         }
 
-        .swiggy-orange { color: #FC8019; }
-        .bg-swiggy-orange { background-color: #FC8019; }
-        .border-swiggy-orange { border-color: #FC8019; }
-        .bg-swiggy-black { background-color: #1c1c1c; }
-
-        .nav-link {
-            @apply px-4 py-2 text-sm font-semibold text-gray-700 rounded-full hover:bg-gray-200 transition-colors;
+        .cover-subtitle {
+            color: #FC8019;
+            font-size: 20px;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            font-weight: 300;
+            animation: fadeInUp 1s ease 0.6s both;
+            position: relative;
+            z-index: 1;
         }
-        .nav-link.active {
-            @apply bg-swiggy-orange text-white;
+
+        .cover-hint {
+            position: absolute;
+            bottom: 50px;
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+            font-style: italic;
+            animation: bounce 2s ease infinite;
+            z-index: 1;
         }
 
-        .card {
-            @apply bg-white p-6 rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Content Styling */
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 48px;
+            color: #1c1c1c;
+            margin-bottom: 40px;
+            line-height: 1.3;
+        }
+
+        h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            color: #FC8019;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 17px;
+            line-height: 1.8;
+            color: #444;
+            margin-bottom: 20px;
+        }
+
+        .highlight {
+            background: linear-gradient(180deg, transparent 60%, rgba(252,128,25,0.3) 60%);
+            font-weight: 600;
+            color: #1c1c1c;
+        }
+
+        /* Interactive Portfolio Grid */
+        .portfolio-section {
+            padding: 80px 60px;
+        }
+
+        .portfolio-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .filter-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
         }
 
         .filter-btn {
-            @apply px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-full shadow-sm border border-gray-200 hover:bg-gray-50;
+            padding: 12px 28px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
         }
+
+        .filter-btn:hover {
+            border-color: #FC8019;
+            color: #FC8019;
+            transform: translateY(-2px);
+        }
+
         .filter-btn.active {
-            @apply bg-swiggy-orange text-white border-swiggy-orange;
+            background: #FC8019;
+            color: white;
+            border-color: #FC8019;
+        }
+
+        .search-box {
+            max-width: 500px;
+            margin: 0 auto 50px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 15px 50px 15px 20px;
+            border: 2px solid #ddd;
+            border-radius: 30px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #FC8019;
+            box-shadow: 0 0 0 3px rgba(252, 128, 25, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #FC8019;
+            font-size: 20px;
+        }
+
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
         }
 
         .portfolio-card {
-            @apply bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-2xl hover:scale-105;
-        }
-
-        /* Detail View Styles */
-        #itinerary-detail {
-             @apply py-16 md:py-24 bg-white; /* Style as needed */
-        }
-
-        /* Chart Container */
-        .chart-container {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            cursor: pointer;
             position: relative;
-            width: 100%;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 300px;
-            max-height: 400px;
-        }
-        @media (min-width: 768px) {
-            .chart-container { height: 350px; }
         }
 
-        /* Utility for hiding sections */
-        .main-section {
-            /* Add any common styles if needed */
+        .portfolio-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 50px rgba(252, 128, 25, 0.3);
+        }
+
+        .portfolio-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(252, 128, 25, 0.9), rgba(255, 107, 53, 0.9));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1;
+        }
+
+        .portfolio-card:hover::before {
+            opacity: 1;
+        }
+
+        .card-image {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .portfolio-card:hover .card-image {
+            transform: scale(1.1);
+        }
+
+        .card-content {
+            padding: 25px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .portfolio-card:hover .card-content {
+            color: white;
+        }
+
+        .card-region {
+            color: #FC8019;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: color 0.3s ease;
+        }
+
+        .portfolio-card:hover .card-region {
+            color: white;
+        }
+
+        .card-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 10px 0;
+            color: #1c1c1c;
+            transition: color 0.3s ease;
+        }
+
+        .portfolio-card:hover .card-title {
+            color: white;
+        }
+
+        .card-description {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            transition: color 0.3s ease;
+        }
+
+        .portfolio-card:hover .card-description {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag {
+            padding: 5px 12px;
+            background: #f5f5f5;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .portfolio-card:hover .tag {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        /* Detail Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            overflow-y: auto;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            max-width: 900px;
+            margin: 60px auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            animation: slideUp 0.4s ease;
+            position: relative;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            font-size: 24px;
+            color: #1c1c1c;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: #FC8019;
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .modal-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+        }
+
+        .modal-body {
+            padding: 40px;
+        }
+
+        .modal-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 36px;
+            color: #1c1c1c;
+            margin-bottom: 20px;
+        }
+
+        .modal-meta {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .meta-tag {
+            padding: 8px 16px;
+            background: #FC8019;
+            color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .modal-description {
+            font-size: 18px;
+            line-height: 1.8;
+            color: #555;
+            margin-bottom: 40px;
+        }
+
+        .itinerary-day {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border-left: 4px solid #FC8019;
+            transition: all 0.3s ease;
+        }
+
+        .itinerary-day:hover {
+            background: #fff5f0;
+            transform: translateX(5px);
+        }
+
+        .day-number {
+            font-weight: 700;
+            color: #FC8019;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .day-route {
+            font-weight: 600;
+            color: #1c1c1c;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .day-description {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Skill Tags */
+        .skill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 40px;
+        }
+
+        .skill-tag {
+            background: #FC8019;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .skill-tag:hover {
+            background: #e67315;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(252, 128, 25, 0.3);
+        }
+
+        /* Navigation Controls */
+        .nav-controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: #FC8019;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(252, 128, 25, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: #e67315;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(252, 128, 25, 0.4);
+        }
+
+        .nav-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+            opacity: 0.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .page-content {
+                padding: 40px 30px;
+            }
+            .cover-name {
+                font-size: 52px;
+            }
+            h1 {
+                font-size: 36px;
+            }
+            .portfolio-grid {
+                grid-template-columns: 1fr;
+            }
+            .nav-dots {
+                display: none;
+            }
+            .modal-content {
+                margin: 20px;
+            }
+        }
+
+        /* Loading Animation */
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
+        .loading {
+            animation: shimmer 2s infinite;
+            background: linear-gradient(to right, #f0f0f0 4%, #e0e0e0 25%, #f0f0f0 36%);
+            background-size: 1000px 100%;
         }
     </style>
 </head>
-<body class="antialiased">
-
-    <!-- Header & Navigation -->
-    <header class="sticky top-0 z-40 w-full bg-white/95 shadow-md backdrop-blur-md">
-        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex-shrink-0">
-                    <span class="text-xl font-bold text-gray-900">Vishnu Priya G</span>
-                </div>
-                <div class="hidden md:flex md:space-x-2">
-                    <a href="#home" class="nav-link active" data-navlink="home">Home</a>
-                    <a href="#philosophy" class="nav-link" data-navlink="philosophy">My Philosophy</a>
-                    <a href="#experience" class="nav-link" data-navlink="experience">Experience</a>
-                    <a href="#portfolio" class="nav-link" data-navlink="portfolio">Portfolio</a>
-                    <a href="#differentiator" class="nav-link" data-navlink="differentiator">Differentiator</a>
-                    <a href="#contact" class="nav-link" data-navlink="contact">Contact</a>
-                </div>
+<body>
+    <div class="page-indicator">Page <span id="currentPage">1</span> of 10</div>
+    
+    <!-- Navigation Dots -->
+    <div class="nav-dots">
+        <div class="nav-dot active" data-page="1" data-label="Cover"></div>
+        <div class="nav-dot" data-page="2" data-label="Philosophy"></div>
+        <div class="nav-dot" data-page="3" data-label="Toolkit"></div>
+        <div class="nav-dot" data-page="4" data-label="Luxury"></div>
+        <div class="nav-dot" data-page="5" data-label="GTM"></div>
+        <div class="nav-dot" data-page="6" data-label="Deep Cuts"></div>
+        <div class="nav-dot" data-page="7" data-label="Passion"></div>
+        <div class="nav-dot" data-page="8" data-label="Secret Weapon"></div>
+        <div class="nav-dot" data-page="9" data-label="Portfolio"></div>
+        <div class="nav-dot" data-page="10" data-label="Contact"></div>
+    </div>
+    
+    <div class="book-container">
+        <!-- Page 1: Cover -->
+        <div class="page active" id="page1">
+            <div class="cover">
+                <div class="cover-label">✈️ An Application for Swiggy CREW</div>
+                <h1 class="cover-name">VISHNU<br>PRIYA G</h1>
+                <p class="cover-subtitle">The Travel Curator Dossier</p>
+                <div class="cover-hint">↓ Scroll or use arrows to explore ↓</div>
             </div>
-        </nav>
-    </header>
+        </div>
 
-    <!-- Container for main sections (excluding detail view initially) -->
-    <div id="main-content-wrapper">
-        <!-- Section 1: Home (Hero / Cover) -->
-        <section id="home" class="main-section relative bg-white pt-24 pb-16 md:pt-32 md:pb-24 text-center overflow-hidden">
-            <div class="absolute inset-0 bg-swiggy-black opacity-5"></div>
-            <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                <p class="text-base font-semibold swiggy-orange uppercase tracking-wider">
-                    An Application for Swiggy CREW
-                </p>
-                <h1 class="mt-4 text-5xl md:text-7xl font-extrabold text-gray-900 tracking-tight">
-                    Vishnu Priya G
-                </h1>
-                <p class="mt-6 text-xl text-gray-600">
-                    THE TRAVEL CURATOR DOSSIER
-                </p>
-                <a href="#portfolio" class="mt-10 inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-full shadow-lg text-white bg-swiggy-orange hover:opacity-90 transition-colors">
-                    Explore My Portfolio
-                </a>
+        <!-- Page 2: Philosophy -->
+        <div class="page" id="page2">
+            <div class="page-content">
+                <h1>I Don't Just Plan Trips.<br>I Curate Moments That Make You Go "Whoa."</h1>
+                <p>Travel, for me, isn't a checklist. It's the <span class="highlight">gasp when you realize whales are swimming past the Devil's Punch Bowl</span>. It's stumbling into Sea Lion Caves and feeling like you've stepped into a live National Geographic episode—baby sea lions, cormorants, the works.</p>
+                <p>It's that inner voice of Steve Irwin whispering from your childhood: <em>"Crikey, would you look at that!"</em></p>
+                <p><strong>That's the "wow" I architect.</strong></p>
+                <p>By day, I'm a brand strategist. By DNA, I'm a travel curator. I hold a <span class="highlight">Gold Medal MBA in Tourism & Travel Management</span> and have spent years crafting high-touch, luxury experiences—from HNI journeys across 5 global markets to launching South India's first "Hop-On Hop-Off" city tour.</p>
+                <p>I speak the language of premium, aesthetically sharp curation that Swiggy CREW demands. And I've got the GTM chops and design sensibility to bring every itinerary to life.</p>
             </div>
-        </section>
+        </div>
 
-        <!-- Section 2: My Philosophy (Editor's Note) -->
-        <section id="philosophy" class="main-section py-20 md:py-28">
-            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 text-center">
-                    I Don't Just Plan Trips. I Curate Narratives.
-                </h2>
-                <div class="mt-12 text-lg text-gray-600 space-y-6">
-                    <p>For me, travel isn't just an itinerary; it's the moment a story comes alive.</p>
-                    
-                    <blockquote class="border-l-4 border-swiggy-orange pl-6 py-4 my-8 bg-orange-50 text-xl font-medium italic">
-                        "It’s stumbling upon the Sea Lion Caves, watching cormorants and baby sea lions, and feeling like an NGC documentary has just unfolded in front of you. It’s the inner voice of Steve Irwin whispering from your childhood."
-                    </blockquote>
-                    
-                    <p>That's the "wow" moment. And I build it.</p>
-                    <p>
-                        I'm a brand strategist by trade, but a travel curator by DNA. I hold a <strong>Gold-Medal MBA in Tourism & Travel Management</strong> and a proven passion for designing high-touch, "offbeat" experiences. I've spent my career building everything from luxury HNI journeys to South India's first "Hop-On Hop-Off" bus tour.
-                    </p>
-                    <p>
-                        I understand the premium, "aesthetically sharp" lens Swiggy CREW requires, and I have the GTM and design skills to bring it to life.
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Section 3: Experience & Toolkit -->
-        <section id="experience" class="main-section py-20 md:py-28 bg-white">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center">
-                    <h2 class="text-4xl md:text-5xl font-bold text-gray-900">The Curator's Toolkit</h2>
-                    <p class="mt-4 text-xl text-gray-600">A snapshot of my credentials and competencies.</p>
-                </div>
-                
-                <!-- Toolkit Grid -->
-                <div class="mt-16 grid md:grid-cols-3 gap-8 text-center">
-                    <div class="card">
-                        <h3 class="text-2xl font-bold text-gray-900">Core Credentials</h3>
-                        <ul class="mt-4 space-y-2 text-gray-600">
-                            <li><strong>MBA, Tourism (Gold Medalist)</strong><br><span class="text-sm">Indian Institute of Tourism & Travel Mgmt</span></li>
-                            <li><strong>B.Tech, Engineering</strong><br><span class="text-sm">Karunya University</span></li>
-                        </ul>
-                        <h3 class="text-2xl font-bold text-gray-900 mt-6">Academic Chops</h3>
-                        <p class="mt-4 text-gray-600"><strong>Research: "Slow Tourism in Slovenia"</strong><br><span class="text-sm">A deep dive into emerging experiential travel trends.</span></p>
+        <!-- Page 3: Toolkit -->
+        <div class="page" id="page3">
+            <div class="page-content">
+                <h1 style="text-align: center;">The Curator's Toolkit</h1>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; margin-top: 40px;">
+                    <div style="background: #f9f9f9; padding: 30px; border-radius: 15px; border-top: 4px solid #FC8019;">
+                        <h2 style="margin-bottom: 20px;">🎓 Core Credentials</h2>
+                        <p><strong>MBA, Tourism & Travel</strong><br>Gold Medalist | IITTM, Govt. of India</p>
+                        <p><strong>B.Tech, Engineering</strong><br>Karunya University</p>
                     </div>
-                    <div class="card">
-                        <h3 class="text-2xl font-bold text-gray-900">Key Competencies</h3>
-                        <ul class="mt-4 space-y-2 text-gray-600 list-none list-inside">
-                            <li>Bespoke Itinerary Curation</li>
-                            <li>Luxury & HNI Client CX</li>
-                            <li>Visual Storytelling & Copywriting</li>
-                            <li>GTM & Content Strategy</li>
-                            <li>Offbeat & Experiential Research</li>
-                        </ul>
+                    <div style="background: #f9f9f9; padding: 30px; border-radius: 15px; border-top: 4px solid #FC8019;">
+                        <h2 style="margin-bottom: 20px;">💡 Key Competencies</h2>
+                        <p>✦ Bespoke Itinerary Curation<br>✦ Luxury & HNI Client CX<br>✦ Visual Storytelling<br>✦ GTM & Content Strategy<br>✦ Offbeat Research</p>
                     </div>
-                    <div class="card">
-                        <h3 class="text-2xl font-bold text-gray-900">Design Stack (JD-Approved)</h3>
-                        <div class="mt-4 flex justify-center space-x-4">
-                            <span class="px-4 py-2 bg-gray-100 rounded-full font-medium">Canva</span>
-                            <span class="px-4 py-2 bg-gray-100 rounded-full font-medium">PowerPoint</span>
-                        </div>
-                        <div class="mt-2 flex justify-center space-x-4">
-                            <span class="px-4 py-2 bg-gray-100 rounded-full font-medium">Google Slides</span>
-                            <span class="px-4 py-2 bg-gray-100 rounded-full font-medium">Figma</span>
+                    <div style="background: #f9f9f9; padding: 30px; border-radius: 15px; border-top: 4px solid #FC8019;">
+                        <h2 style="margin-bottom: 20px;">🎨 Design Stack</h2>
+                        <div class="skill-tags" style="justify-content: flex-start; margin-top: 20px;">
+                            <span class="skill-tag">Canva</span>
+                            <span class="skill-tag">PowerPoint</span>
+                            <span class="skill-tag">Figma</span>
+                            <span class="skill-tag">Slides</span>
                         </div>
                     </div>
                 </div>
-
-                <!-- Featured Stories -->
-                <div class="mt-24">
-                    <h2 class="text-4xl md:text-5xl font-bold text-gray-900 text-center">Featured Stories</h2>
-                    <div class="mt-16 grid lg:grid-cols-3 gap-8">
-                        <div class="card">
-                            <h3 class="text-2xl font-bold text-gray-900">Chapter 1: The Luxury Lens (SITA)</h3>
-                            <p class="mt-2 text-lg font-semibold swiggy-orange">Curating High-Touch Journeys for HNI Clients</p>
-                            <p class="mt-4 text-gray-600">Owned the end-to-end travel experience for HNI clients from 5 global markets (France, UK, Canada, Australia). This role was pure "detail-obsessed" curation.</p>
-                            <ul class="mt-4 space-y-2 list-disc list-inside text-gray-600">
-                                <li>Designed "offbeat" bespoke journeys.</li>
-                                <li>Shaped the premium brand voice.</li>
-                                <li>Delivered a <strong>98% CSAT score</strong>.</li>
-                            </ul>
-                        </div>
-                        <div class="card">
-                            <h3 class="text-2xl font-bold text-gray-900">Chapter 2: The GTM Launch (GoIndia)</h3>
-                            <p class="mt-2 text-lg font-semibold swiggy-orange">Building an Experience From Scratch</p>
-                            <p class="mt-4 text-gray-600">Inspired by London's red bus, I designed, developed, and launched South India's first-ever "Hop-On Hop-Off" city tour. This wasn't just curation; it was *creation*.</p>
-                            <div class="mt-4 p-4 bg-orange-50 border-l-4 border-swiggy-orange">
-                                <p class="font-semibold text-gray-700">"I led the complete GTM, from concept and itinerary mapping to writing all web content."</p>
-                            </div>
-                            <p class="mt-4 text-gray-700 font-bold">Result: Drove a 2.1x increase in inbound leads.</p>
-                        </div>
-                        <div class="card">
-                            <h3 class="text-2xl font-bold text-gray-900">Chapter 3: The Deep Cuts (Balmer & Lawrie)</h3>
-                            <p class="mt-2 text-lg font-semibold swiggy-orange">Experiential Design for Govt. of India</p>
-                            <p class="mt-4 text-gray-600">As a consultant, I designed and mapped official itineraries for Govt. programs, researching and developing frameworks for experiential travel aimed at inbound HNI tourists from Europe.</p>
-                            <p class="mt-4 text-gray-600">The focus was moving beyond simple "sightseeing" into multi-day, immersive cultural journeys.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        
-        <!-- Section 7 (from MD): Passion / Centerfold -->
-        <section id="passion" class="main-section py-20 md:py-28 bg-gray-800 text-white">
-             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-12 items-center">
-                 <div>
-                     <h3 class="text-base font-semibold swiggy-orange uppercase tracking-wider">Field Notes</h3>
-                     <h2 class="mt-4 text-4xl md:text-5xl font-bold">The 3-Month Story-Finding Mission</h2>
-                     <p class="mt-6 text-lg text-gray-300">My 2018 travel break wasn't a break. It was field research. From realizing a childhood dream at Universal's Harry Potter world to finding that 'NGC' moment at the Sea Lion Caves, I was hunting for the "wow" factor.</p>
-                     <p class="mt-4 text-lg text-gray-300">This is what I bring to CREW: The ability to find the magic and translate it into a "visually compelling travel asset."</p>
-                 </div>
-                 <div class="w-full h-80 rounded-lg shadow-2xl overflow-hidden">
-                     <img src="https://storage.googleapis.com/gemini-prod-us-public/image_8a4980.png" alt="Oregon Coast Sea Lions" class="w-full h-full object-cover">
-                 </div>
-             </div>
-        </section>
-
-        <!-- Section 4: Interactive Portfolio -->
-        <section id="portfolio" class="main-section py-20 md:py-28">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center">
-                    <h2 class="text-4xl md:text-5xl font-bold text-gray-900">Interactive Portfolio</h2>
-                    <p class="mt-4 text-xl text-gray-600">
-                        Here is the proof. A live, filterable dashboard of my curation work.
-                    </p>
-                    <p class="mt-2 text-gray-500">
-                        Click any card to see the detailed itinerary. This is a selection from over 40 itineraries I've designed.
-                    </p>
-                </div>
-
-                <!-- Portfolio Chart -->
-                <div class="mt-16">
-                    <h3 class="text-2xl font-bold text-gray-900 text-center mb-6">Portfolio Breadth: Itineraries by Region</h3>
-                    <div class="chart-container">
-                        <canvas id="itineraryChart"></canvas>
-                    </div>
-                </div>
-
-                <!-- Portfolio Filters -->
-                <div class="mt-16">
-                    <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                        <div id="filter-buttons" class="flex flex-wrap justify-center gap-2">
-                            <button class="filter-btn active" data-filter="all">All</button>
-                            <button class="filter-btn" data-filter="North America">North America</button>
-                            <button class="filter-btn" data-filter="India">India</button>
-                            <button class="filter-btn" data-filter="Asia">Asia (Ex-India)</button>
-                            <button class="filter-btn" data-filter="Africa">Africa</button>
-                            <button class="filter-btn" data-filter="Oceania">Oceania</button>
-                        </div>
-                        <div class="relative w-full md:w-1/3">
-                            <input type="text" id="search-bar" class="w-full px-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-swiggy-orange" placeholder="Search (e.g., 'HNI', 'Route 66', 'Nerd')">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Portfolio Grid -->
-                <div id="portfolio-grid" class="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <!-- Cards will be dynamically inserted here by JavaScript -->
-                </div>
-            </div>
-        </section>
-
-        <!-- Section 5: The Differentiator -->
-        <section id="differentiator" class="main-section py-20 md:py-28 bg-swiggy-black text-white text-center">
-            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                <h2 class="text-4xl md:text-5xl font-bold">
-                    My Secret Weapon?
-                    <span class="block swiggy-orange">(It's Fintech.)</span>
-                </h2>
-                <p class="mt-8 text-xl text-gray-300">
-                    You have 100 travel fans applying for this. How many of them also have 8+ years in B2B brand strategy, GTM execution, and funnel optimization?
-                </p>
-                <p class="mt-6 text-2xl text-white font-semibold">
-                    I can design the dream getaway.
-                    <br>
-                    AND I know how to market it, measure it, and turn a client's "wow" moment into a data-backed success story.
-                </p>
-                <div class="mt-10 flex flex-wrap justify-center gap-3">
-                    <span class="px-4 py-2 bg-gray-700 text-orange-300 rounded-full font-medium">GTM Strategy</span>
-                    <span class="px-4 py-2 bg-gray-700 text-orange-300 rounded-full font-medium">Demand Gen</span>
-                    <span class="px-4 py-2 bg-gray-700 text-orange-300 rounded-full font-medium">Campaign Analytics</span>
-                    <span class="px-4 py-2 bg-gray-700 text-orange-300 rounded-full font-medium">Brand Storytelling</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- Section 6: Contact -->
-        <footer id="contact" class="main-section py-20 bg-white">
-            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <h2 class="text-4xl md:text-5xl font-bold text-gray-900">
-                    Let's Build Something Exceptional.
-                </h2>
-                <p class="mt-6 text-xl text-gray-600">
-                    Thank you for your consideration.
-                </p>
-                <div class="mt-10 flex justify-center space-x-6">
-                    <a href="mailto:vishnupriya0192@gmail.com" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-lg text-white bg-swiggy-orange hover:opacity-90 transition-colors">
-                        Email Me
-                    </a>
-                    <a href="https://www.linkedin.com/in/vpg" target="_blank" class="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-full text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-                        LinkedIn
-                    </a>
-                    <a href="#" id="resume-link" class="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-full text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-                        View (the boring) PDF Resume
-                    </a>
-                </div>
-            </div>
-        </footer>
-    </div> <!-- End of main content wrapper -->
-
-    <!-- Section for Itinerary Detail View (Initially Hidden) -->
-    <section id="itinerary-detail" class="hidden py-16 md:py-24 bg-gray-50">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <!-- Back Button -->
-            <button id="back-to-portfolio" class="mb-8 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                &larr; Back to Portfolio
-            </button>
-            
-            <!-- Detail Content -->
-            <div class="bg-white p-6 md:p-10 rounded-lg shadow-xl">
-                <h2 id="detail-title" class="text-3xl md:text-4xl font-bold text-gray-900 mb-4"></h2>
-                 <div class="w-full h-64 md:h-96 rounded-lg overflow-hidden mb-6 bg-gray-200">
-                     <img id="detail-image" src="" alt="Itinerary image" class="w-full h-full object-cover">
-                 </div>
-                 <div id="detail-meta" class="mb-6 flex flex-wrap gap-2 items-center text-sm">
-                     <!-- Region and Tags will be injected here -->
-                 </div>
-                <h3 class="text-xl font-bold text-gray-800 mb-3">Overview</h3>
-                <p id="detail-description" class="text-gray-600 mb-8"></p>
-                
-                <h3 class="text-xl font-bold text-gray-800 mb-4 border-t pt-6">Day-by-Day Highlights</h3>
-                <div id="detail-days" class="space-y-4 max-h-[60vh] overflow-y-auto pr-3">
-                    <!-- Day-by-day details will be injected here -->
+                <div style="background: #fff5f0; padding: 30px; border-radius: 15px; margin-top: 30px; border-left: 6px solid #FC8019;">
+                    <h2>📚 Academic Chops</h2>
+                    <p><strong>Research Paper:</strong> "Slow Tourism in Slovenia"<br><em>A deep dive into emerging travel trends and experiential journeys.</em></p>
+                    <p style="color: #FC8019; font-size: 14px; margin-top: 10px;">✓ Matches JD: "Stay updated on emerging travel trends"</p>
                 </div>
             </div>
         </div>
-    </section>
 
-    
+        <!-- Page 4-6: Featured Stories (keeping your original content) -->
+        <div class="page" id="page4">
+            <div class="page-content">
+                <div style="width: 100%; height: 250px; background: linear-gradient(135deg, #FC8019, #ff9d4d); border-radius: 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: 700; margin-bottom: 30px;">
+                    🥂 Luxury Travel Destinations
+                </div>
+                <h1>Chapter 1: The Luxury Lens</h1>
+                <h2>Curating High-Touch Journeys for HNI Clients at SITA</h2>
+                <p>At SITA, I owned the end-to-end travel experience for high-net-worth individuals from 5 global markets—France, UK, Canada, Australia, and the US. This role demanded obsessive attention to detail and flawless execution.</p>
+                <p><strong>Key Projects:</strong></p>
+                <p>→ Designed offbeat, bespoke journeys for luxury partners like Audley Travel and Kensington Tours.<br>
+                → Shaped the premium brand voice across all client-facing itineraries and proposals.<br>
+                → Delivered a <span class="highlight">98% CSAT score</span> by designing seamless, high-value customer experiences.</p>
+                <p>This wasn't just planning trips. It was engineering delight at every touchpoint.</p>
+            </div>
+        </div>
+
+        <div class="page" id="page5">
+            <div class="page-content">
+                <h1>Chapter 2: The GTM Launch</h1>
+                <h2>Building an Experience From Scratch at GoIndia Holiday</h2>
+                <p>Ever heard of South India's first "Hop-On Hop-Off" city tour? That was me. Inspired by London's iconic red buses, I didn't just conceptualize this—I <em>built</em> it.</p>
+                <div style="background: #FC8019; color: white; padding: 30px; border-radius: 15px; font-size: 20px; font-weight: 600; line-height: 1.6; margin: 30px 0; font-style: italic;">
+                    "I led the complete GTM: concept, itinerary mapping, route optimization, and writing every piece of web content and promotional collateral."
+                </div>
+                <p>This was pure 0-to-1 creation. From identifying key city stops to crafting the narrative that would make tourists feel like insiders, I designed the entire customer journey.</p>
+                <div style="background: #1c1c1c; color: white; padding: 25px; border-radius: 15px; font-size: 20px; font-weight: 700; text-align: center; margin-top: 30px;">
+                    📈 Result: 2.1x increase in inbound leads within 90 days
+                </div>
+            </div>
+        </div>
+
+        <div class="page" id="page6">
+            <div class="page-content">
+                <h1>Chapter 3: The Deep Cuts</h1>
+                <h2>Experiential Design for Government of India at Balmer & Lawrie</h2>
+                <p>As a consultant, I was entrusted with designing and mapping official itineraries for Government of India programs—high-stakes work that required both creativity and precision.</p>
+                <p>My mandate: Research and develop frameworks for <strong>experiential travel</strong> aimed at inbound HNI tourists from Europe. This meant moving beyond simple sightseeing into multi-day, immersive cultural journeys.</p>
+                <p>Think: temple stays in Tamil Nadu, spice plantation trails in Kerala, heritage walks through forgotten Rajasthani villages.</p>
+                <div style="width: 100%; height: 250px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: 700; margin: 30px 0;">
+                    🗺️ Itinerary & Experience Design
+                </div>
+                <p>This role sharpened my ability to balance operational feasibility with aspirational storytelling—exactly what premium travel curation demands.</p>
+            </div>
+        </div>
+
+        <!-- Page 7: Passion -->
+        <div class="page" id="page7">
+            <div class="page-content" style="display: flex; align-items: center; justify-content: center; min-height: 70vh;">
+                <div style="max-width: 700px; background: rgba(252, 128, 25, 0.05); padding: 50px; border-radius: 20px; border: 3px solid #FC8019;">
+                    <h2 style="font-size: 14px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 20px;">🌊 Field Notes</h2>
+                    <h1 style="font-size: 42px; margin-bottom: 30px;">The 3-Month Story-Finding Mission</h1>
+                    <p>My 2018 travel break wasn't a break. It was <strong>field research</strong>.</p>
+                    <p>From fulfilling a childhood dream at Universal's Harry Potter World to discovering that heart-stopping "National Geographic" moment at Oregon's Sea Lion Caves, I was hunting for the <em>wow</em> factor.</p>
+                    <p><strong>That's what I bring to CREW: The ability to find the magic in a place and translate it into a visually compelling, emotionally resonant travel asset.</strong></p>
+                    <p style="color: #FC8019; font-weight: 600;">Travel isn't just my job. It's my lens for seeing the world.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 8: Differentiator -->
+        <div class="page" id="page8">
+            <div style="background: #1c1c1c; color: white; min-height: 85vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 60px; border-radius: 20px;">
+                <h1 style="font-size: 56px; color: white; margin-bottom: 40px; line-height: 1.2;">My Secret Weapon?<br><span style="color: #FC8019;">(It's Fintech.)</span></h1>
+                <p style="font-size: 22px; color: #ddd; margin-bottom: 20px;">You'll have 100 travel enthusiasts applying for this role.</p>
+                <p style="font-size: 22px; color: #ddd; margin-bottom: 20px;">But how many also have <strong style="color: white;">8+ years in B2B brand strategy, GTM execution, and funnel optimization?</strong></p>
+                <p style="font-size: 26px; color: white; margin: 30px 0; font-weight: 700;">I'm not just a curator. I'm a <em style="color: #FC8019;">strategist</em>.</p>
+                <p style="font-size: 20px; color: #ddd;">I can design the dream getaway.<br><strong style="color: white;">AND</strong> I know how to market it, measure it, and turn a client's "wow" moment into a data-backed success story.</p>
+                <div class="skill-tags">
+                    <span class="skill-tag">GTM Strategy</span>
+                    <span class="skill-tag">Demand Gen</span>
+                    <span class="skill-tag">Campaign Analytics</span>
+                    <span class="skill-tag">Brand Storytelling</span>
+                    <span class="skill-tag">Content Marketing</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 9: Interactive Portfolio -->
+        <div class="page" id="page9">
+            <div class="portfolio-section">
+                <div class="portfolio-header">
+                    <h1>The Proof Is in the Portfolio</h1>
+                    <p style="font-size: 18px; color: #666; margin-top: 15px;">28 hand-crafted itineraries. Click any card to explore the journey.</p>
+                </div>
+
+                <div class="filter-container">
+                    <button class="filter-btn active" data-filter="all">All Regions</button>
+                    <button class="filter-btn" data-filter="North America">🇺🇸 North America</button>
+                    <button class="filter-btn" data-filter="India">🇮🇳 India</button>
+                    <button class="filter-btn" data-filter="Asia">🌏 Asia</button>
+                    <button class="filter-btn" data-filter="Africa">🦁 Africa</button>
+                    <button class="filter-btn" data-filter="Oceania">🦘 Oceania</button>
+                </div>
+
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search itineraries... (e.g., 'HNI', 'Morocco', 'Safari')">
+                    <span class="search-icon">🔍</span>
+                </div>
+
+                <div class="portfolio-grid" id="portfolioGrid">
+                    <!-- Cards will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 10: Contact -->
+        <div class="page" id="page10">
+            <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; min-height: 70vh; padding: 60px;">
+                <h1 style="font-size: 52px; margin-bottom: 40px;">Let's Build Something<br>Exceptional Together.</h1>
+                <h2 style="font-size: 32px; color: #FC8019; margin-bottom: 50px; font-weight: 300;">VISHNU PRIYA G</h2>
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <a href="mailto:vishnupriya0192@gmail.com" style="display: flex; align-items: center; justify-content: center; gap: 10px; color: #1c1c1c; text-decoration: none; font-size: 18px; padding: 15px 30px; background: #f9f9f9; border-radius: 50px; transition: all 0.3s ease;">
+                        <span>✉️</span> vishnupriya0192@gmail.com
+                    </a>
+                    <a href="https://linkedin.com/in/vpg" target="_blank" style="display: flex; align-items: center; justify-content: center; gap: 10px; color: #1c1c1c; text-decoration: none; font-size: 18px; padding: 15px 30px; background: #f9f9f9; border-radius: 50px; transition: all 0.3s ease;">
+                        <span>💼</span> linkedin.com/in/vpg
+                    </a>
+                    <a href="#" style="display: flex; align-items: center; justify-content: center; gap: 10px; color: #1c1c1c; text-decoration: none; font-size: 18px; padding: 15px 30px; background: #f9f9f9; border-radius: 50px; transition: all 0.3s ease;">
+                        <span>📄</span> View PDF Resume
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Itinerary Details -->
+    <div class="modal" id="itineraryModal">
+        <div class="modal-content">
+            <div class="modal-close" onclick="closeModal()">×</div>
+            <img class="modal-image" id="modalImage" src="" alt="">
+            <div class="modal-body">
+                <h1 class="modal-title" id="modalTitle"></h1>
+                <div class="modal-meta" id="modalMeta"></div>
+                <p class="modal-description" id="modalDescription"></p>
+                <h2 style="margin-top: 40px; margin-bottom: 20px; border-top: 3px solid #FC8019; padding-top: 20px;">Day-by-Day Highlights</h2>
+                <div id="modalItinerary"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-controls">
+        <button class="nav-btn" id="prevBtn" onclick="prevPage()">← Previous</button>
+        <button class="nav-btn" id="nextBtn" onclick="nextPage()">Next →</button>
+    </div>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            
-            // --- DOM Elements ---
-            const mainContentWrapper = document.getElementById('main-content-wrapper');
-            const detailViewSection = document.getElementById('itinerary-detail');
-            const grid = document.getElementById('portfolio-grid');
-            const searchBar = document.getElementById('search-bar');
-            const filterButtons = document.querySelectorAll('#filter-buttons .filter-btn');
-            const backButton = document.getElementById('back-to-portfolio');
-            
-            // Detail view elements
-            const detailTitle = document.getElementById('detail-title');
-            const detailImage = document.getElementById('detail-image');
-            const detailMeta = document.getElementById('detail-meta');
-            const detailDescription = document.getElementById('detail-description');
-            const detailDays = document.getElementById('detail-days');
+        let currentPage = 1;
+        const totalPages = 10;
 
-            // --- Itinerary Data ---
-            const allItineraries = [
-                {
-                    id: 1,
-                    title: "Postcard Sunsets! (US West Coast)",
-                    region: "North America",
-                    tags: ["Road Trip", "Coastal", "Nature", "HNI", "Devil's Punch Bowl", "Pacific Coast Highway"],
-                    image: "https://placehold.co/600x400/fca5a5/7c2d12?text=US+West+Coast",
-                    description: "A 20-day, multi-state itinerary focused on 'Postcard Sunsets' and offbeat discoveries. This route is designed for maximum photographic impact and experiential moments.",
-                    details: [
-                        { day: 1, route: "Seattle - Olympia", text: "Explore Seattle's markets, then drive to the state capital." },
-                        { day: 7, route: "Portland - Cannon Beach", text: "Visit Haystack Rock and explore the charming coastal town." },
-                        { day: 9, route: "Newport - Devil's Punch Bowl", text: "Stumble upon the Sea Lion Caves and watch whales at the Punch Bowl." },
-                        { day: 15, route: "San Francisco - Big Sur", text: "Drive the iconic Highway 1, stopping at Bixby Creek Bridge." },
-                        { day: 17, route: "Los Angeles", text: "Spend a whole day exploring the Universal Studios in Los Angeles or Disney in Anaheim." }
-                    ]
-                },
-                {
-                    id: 2,
-                    title: "The Great American Road Trip (Route 66)",
-                    region: "North America",
-                    tags: ["Road Trip", "Iconic", "History", "Culture", "Route 66"],
-                    image: "https://placehold.co/600x400/fdba74/9a3412?text=Route+66",
-                    description: "The quintessential American road trip. A 19-day journey from Chicago to Santa Monica, capturing the spirit of the 'Mother Road' with its quirky towns and historic sites.",
-                    details: [
-                        { day: 1, route: "Chicago, IL - Springfield, IL", text: "Begin the journey, leaving the city for the historic highway." },
-                        { day: 10, route: "Santa Fe, NM - Durango, CO", text: "Explore the art and culture of Santa Fe before heading to the mountains." },
-                        { day: 14, route: "Grand Canyon, AZ - Las Vegas, NV", text: "Witness the grandest of canyons before diving into the lights of Vegas." },
-                        { day: 18, route: "Needles, CA - Santa Monica, CA", text: "Historic Barstow and the fascinating Route 66 Museum is a worthy stop today." }
-                    ]
-                },
-                {
-                    id: 3,
-                    title: "Yalla Morocco!",
-                    region: "Africa",
-                    tags: ["Exotic", "Culture", "Desert", "HNI", "Medinas"],
-                    image: "https://placehold.co/600x400/86efac/166534?text=Yalla+Morocco!",
-                    description: "A 15-day 'Medinas & Markets' journey designed for high-touch, experiential HNI clients, from the chaos of Marrakech to the quiet of the Sahara.",
-                    details: [
-                        { day: 1, route: "Marrakech", text: "Arrive and dive into the Jemaa el-Fna square." },
-                        { day: 5, route: "Fes - Chef Chaouene", text: "Explore the ancient medina of Fes, then drive to the 'Blue City'." },
-                        { day: 8, route: "Erg Chebbi", text: "Camel trek into the Sahara for a night in a luxury desert camp." },
-                        { day: 14, route: "Rabat - Casablanca", text: "Visit the capital's Kasbah before ending at the Hassan II Mosque." }
-                    ]
-                },
-                {
-                    id: 4,
-                    title: "All of Vietnam - An Overlanding Adventure",
-                    region: "Asia",
-                    tags: ["Overland", "Culture", "History", "Food", "Vietnam"],
-                    image: "https://placehold.co/600x400/93c5fd/1e40af?text=Vietnam",
-                    description: "A 22-day staggering journey of natural beauty and cultural complexity, from the dynamic megacities to timeless hill-tribe villages.",
-                    details: [
-                        { day: 2, route: "Hanoi - Ha Long Bay", text: "Board a traditional junk for an overnight cruise among limestone islands." },
-                        { day: 7, route: "Vinh - Hue", text: "Cross the DMZ, visiting historical war sites before arriving in the ancient Imperial City." },
-                        { day: 16, route: "Da Lat - Ho Chi Minh City", text: "Descend from the 'City of Eternal Spring' to the bustling energy of Saigon." },
-                        { day: 20, route: "Cu Chi Tunnels", text: "Explore the incredible underground network used during the Vietnam War." }
-                    ]
-                },
-                {
-                    id: 5,
-                    title: "A Nerd's Adventure of New Zealand",
-                    region: "Oceania",
-                    tags: ["LOTR", "Nerd's Tour", "Nature", "Adventure", "Weta Cave"],
-                    image: "https://placehold.co/600x400/c4b5fd/4c1d95?text=Nerd's+Tour+NZ",
-                    description: "The fabled lands of Lord of the Rings and Narnia come alive. This 12-day tour is for the book worms and film fans, from Hobbiton to Weta Cave.",
-                    details: [
-                        { day: 5, route: "Tauranga - Hobbiton - Waitomo", text: "Visit the Hobbiton movie set, followed by the magical glow worm caves." },
-                        { day: 7, route: "Rotorua - Wai-o-Tapu", text: "Explore geothermal wonders and experience a traditional Tamaki Maori Village." },
-                        { day: 11, route: "Mairenui Rural retreat - Wellington", text: "Drive to the capital and visit Te Papa Museum and the Weta Cave workshop." }
-                    ]
-                },
-                {
-                    id: 6,
-                    title: "Claws and Hooves - A Botswanian Adventure!",
-                    region: "Africa",
-                    tags: ["Safari", "Wildlife", "Luxury", "HNI", "Okavango Delta"],
-                    image: "https://placehold.co/600x400/fde047/b45309?text=Botswana+Safari",
-                    description: "A 16-day luxury safari in arguably the greatest wildlife destination on the planet, from the Okavango Delta to Chobe National Park.",
-                    details: [
-                        { day: 3, route: "Okavango Delta", text: "Explore the inland flood plain by mokoro (dug-out canoe), spotting elephants." },
-                        { day: 7, route: "Khwai Concession", text: "Known for its rich wildlife, especially predators like leopards and wild dogs." },
-                        { day: 11, route: "Savute", text: "Witness the famous Savute channel and its high concentration of lions." },
-                        { day: 13, route: "Chobe National Park", text: "Embark on game drives and river cruises to see the vast elephant herds." }
-                    ]
-                },
-                {
-                    id: 7,
-                    title: "Forts & Forests of Rajasthan",
-                    region: "India",
-                    tags: ["Culture", "History", "Royalty", "Wildlife", "Rajasthan"],
-                    image: "https://placehold.co/600x400/fda4af/9f1239?text=Rajasthan",
-                    description: "Palaces, forts, lakes, and wildlife. A 6-day compact holiday to explore the \"Land of Kings,\" from Jaipur's palaces to Ranthambore's tigers.",
-                    details: [
-                        { day: 2, route: "Jaipur", text: "Visit Jantar Mantar, City Palace, Hawa Mahal, Jal Mahal, Naigarh Fort and Amer Fort." },
-                        { day: 4, route: "Sawai Madhopur - Ranthambore", text: "Full day of jungle safaris in Ranthambore National Park seeking tigers." },
-                        { day: 5, route: "Udaipur", text: "Arrive in the 'City of Lakes' and enjoy a boat ride on Lake Pichola." }
-                    ]
-                },
-                {
-                    id: 8,
-                    title: "God's Own Country - Kerala",
-                    region: "India",
-                    tags: ["Nature", "Backwaters", "Relaxation", "Culture", "Kerala"],
-                    image: "https://placehold.co/600x400/86efac/166534?text=Kerala",
-                    description: "A 7-day classic package to experience all of Kerala, from the colonial history of Cochin to the serene backwaters of Alleppey and the tea plantations of Munnar.",
-                    details: [
-                        { day: 2, route: "Trivandrum - Kovalam", text: "Visit Padmanabhaswamy Temple before relaxing on the famous Kovalam beach." },
-                        { day: 4, route: "Alleppey", text: "Board a traditional Kettuvallam (houseboat) for an overnight cruise on the backwaters." },
-                        { day: 6, route: "Munnar", text: "Explore the \"Paradise on Earth\" with its rolling tea estates and cool air." }
-                    ]
-                },
-                {
-                    id: 9,
-                    title: "Monuments of Hoysalas - Karnataka",
-                    region: "India",
-                    tags: ["Heritage", "History", "Architecture", "Pilgrimage", "Karnataka"],
-                    image: "https://placehold.co/600x400/fbbf24/92400e?text=Karnataka",
-                    description: "A 5-day tribute to Indian architecture, this tour covers the timeless monuments of Belur, Halebidu, and the world's tallest monolithic statue at Shravanabelagola.",
-                    details: [
-                        { day: 2, route: "Bengaluru - Srirangapatna - Mysuru", text: "Visit Tipu's Summer Palace and the illuminated Brindavan Gardens." },
-                        { day: 3, route: "Mysuru - Belur - Halebidu", text: "Marvel at the intricate sculptures of the Hoysala temples." },
-                        { day: 4, route: "Halebidu - Shravanabelagola - Bengaluru", text: "Witness the 1000-year-old Gomateshwara statue." }
-                    ]
-                },
-                 {
-                    id: 10,
-                    title: "Sights of the East Coast (US)",
-                    region: "North America",
-                    tags: ["Road Trip", "History", "Iconic", "Cities", "East Coast"],
-                    image: "https://placehold.co/600x400/67e8f9/155e75?text=US+East+Coast",
-                    description: "A 20-day road trip along almost 2,000 miles, from the Statue of Liberty in New York to the Art Deco hotels of Miami, passing through quirky seaside towns and historic sites.",
-                    details: [
-                        { day: 2, route: "New York, NY", text: "Explore the 'Big Apple', visiting Times Square, Central Park, and the Statue of Liberty." },
-                        { day: 5, route: "Washington D.C.", text: "Visit the nation's capital, with its iconic monuments, museums, and the White House." },
-                        { day: 10, route: "Charleston, SC", text: "Explore the historic charm and cobblestone streets of Charleston." },
-                        { day: 16, route: "Orlando, FL", text: "A mecca for theme park enthusiasts, from Disney World to Universal Studios." },
-                        { day: 19, route: "Miami, FL", text: "Cruise South Beach, walk the boardwalk, and explore Little Havana." }
-                    ]
-                },
-                {
-                    id: 11,
-                    title: "Eclectic Asia - Overlanding Laos!",
-                    region: "Asia",
-                    tags: ["Overland", "Culture", "Ecotourism", "Laos"],
-                    image: "https://placehold.co/600x400/d8b4fe/581c87?text=Laos",
-                    description: "A 26-day epic journey traversing the entire country, both north and south, from pristine ecologies and primary forests to ancient Buddhist traditions.",
-                    details: [
-                        { day: 3, route: "Luang Prabang", text: "Witness the morning alms-giving ceremony and visit Kuang Si waterfalls." },
-                        { day: 8, route: "Vang Vieng", text: "Explore the 'Blue Lagoon' and the limestone karsts, by tubing or kayaking." },
-                        { day: 17, route: "Bolaven Plateau", text: "Discover a coffee-growing region with countless waterfalls like Tad Fane." },
-                        { day: 21, route: "Si Phan Don (4000 Islands)", text: "Relax on Don Dhet, cycle to Li Phi waterfall, and spot Irrawaddy dolphins." }
-                    ]
-                },
-                {
-                    id: 12,
-                    title: "An Empire of Temples - Cambodia",
-                    region: "Asia",
-                    tags: ["Heritage", "History", "Angkor Wat", "Cambodia"],
-                    image: "https://placehold.co/600x400/a5f3fc/0e7490?text=Cambodia",
-                    description: "A 14-day tour where ancient and modern worlds collide. Centered on the fabled temples of Angkor, monuments unrivalled in scale and grandeur in Southeast Asia.",
-                    details: [
-                        { day: 3, route: "Phnom Penh", text: "Visit the Royal Palace, Silver Pagoda, and the Tuol Sleng Genocide Museum." },
-                        { day: 7, route: "Siem Reap - Angkor Wat", text: "Sunrise at Angkor Wat, explore Angkor Thom (Bayon) and the jungle temple of Ta Prohm." },
-                        { day: 12, route: "Battambang", text: "Ride the famous bamboo train and visit Phnom Sampeu to see the 'bat cave' exodus at dusk." }
-                    ]
-                },
-                {
-                    id: 13,
-                    title: "Nomadic Trail of Mongolia",
-                    region: "Asia",
-                    tags: ["Offbeat", "Culture", "Nomadic", "Gobi Desert", "Mongolia"],
-                    image: "https://placehold.co/600x400/fecaca/991b1b?text=Mongolia",
-                    description: "A 19-day off-the-grid adventure into a land of dirt tracks, ger camps, and endless stars. Appreciate a land untouched by modernization and overpopulation.",
-                    details: [
-                        { day: 5, route: "Gobi Gurvan Saikhan NP", text: "Explore the 'Yolyn Am' ice-filled gorge in the Gobi Desert." },
-                        { day: 7, route: "Khongoryn Els Sand Dunes", text: "Climb the 'Singing Dunes' and experience a camel ride." },
-                        { day: 9, route: "Bayanzag (Flaming Cliffs)", text: "Visit the world-famous site for dinosaur fossil discoveries." },
-                        { day: 15, route: "Hustain National Park", text: "Track the rare Przewalski’s horses (Takhi), unique to Mongolia." },
-                        { day: 17, route: "Terelj National Park", text: "Hike to Aryapala Monastery and see the iconic 'Turtle Rock'." }
-                    ]
-                },
-                {
-                    id: 14,
-                    title: "Explore the True Africa - All of Botswana",
-                    region: "Africa",
-                    tags: ["Safari", "Wildlife", "Wilderness", "Okavango Delta", "Botswana"],
-                    image: "https://placehold.co/600x400/d9f99d/3f6212?text=Botswana",
-                    description: "A 25-day true wilderness safari. Wake to trumpeting elephants and whooping hyenas. This is a vision of earth long before the arrival of man.",
-                    details: [
-                        { day: 6, route: "Nxai Pans", text: "Visit the ancient baobabs and look for cheetahs hunting in the pans." },
-                        { day: 11, route: "Okavango Delta", text: "Stay in a luxury camp, explore by mokoro, and take guided bush walks." },
-                        { day: 16, route: "Khwai Concession", text: "Prime game viewing area, famous for its leopards, lions, and wild dogs." },
-                        { day: 20, route: "Chobe National Park", text: "Witness the largest concentration of elephants in Africa." },
-                        { day: 24, route: "Livingstone, Zambia", text: "Visit the smoke that thunders, Victoria Falls, from the Zambian side." }
-                    ]
-                },
-                {
-                    id: 15,
-                    title: "Wild West of South Africa",
-                    region: "Africa",
-                    tags: ["Overland", "Desert", "Nature", "Coastal", "South Africa"],
-                    image: "https://placehold.co/600x400/f5d0fe/701a75?text=South+Africa+West",
-                    description: "A 13-day self-drive overlanding trip through the untrodden desert of South Africa's West Coast, from Cape Town to the 'place of great noise', Augrabies Falls.",
-                    details: [
-                        { day: 2, route: "Cape Town", text: "Hike Table Mountain and sail in a replica Jolly Roger Ship." },
-                        { day: 4, route: "Paternoster", text: "Explore Cape Columbine Nature Reserve, one of the most desolate destinations." },
-                        { day: 7, route: "West Coast National Park", text: "Visit during spring (Aug-Sep) to see the land covered in wildflowers." },
-                        { day: 10, route: "Augrabies Falls", text: "Witness the Orange River form a spectacular 60-meter high waterfall." }
-                    ]
-                },
-                {
-                    id: 16,
-                    title: "Wine & Wild - A South African Holiday",
-                    region: "Africa",
-                    tags: ["Wine", "Wildlife", "Luxury", "Gourmet", "South Africa", "Garden Route"],
-                    image: "https://placehold.co/600x400/ddd6fe/4338ca?text=SA+Wine+&+Wild",
-                    description: "A 13-day perfect holiday for quiet and peace, from the luxurious vineyards of Franschhoek to the private game reserves of Shamwari.",
-                    details: [
-                        { day: 2, route: "Cape Town - Franschhoek", text: "Move to the vineyards for gourmet food and exquisite wine." },
-                        { day: 4, route: "Elgin", text: "Experience a 5-hour zipline from peak to peak for an adrenaline dosage." },
-                        { day: 7, route: "Knysna", text: "Explore the famous Knysna Heads and enjoy fresh oysters." },
-                        { day: 8, route: "Tsitsikamma Forest", text: "Hike to the Stormsriver Suspension Bridge and enjoy the dramatic coastline." },
-                        { day: 10, route: "Shamwari Game Reserve", text: "Stay in a luxury lodge, enjoy game drives, and visit the Born Free Big Cat Rescue Center." }
-                    ]
-                },
-                {
-                    id: 17,
-                    title: "A Kiwi Adventure - North & South NZ",
-                    region: "Oceania",
-                    tags: ["Adventure", "Nature", "Iconic", "New Zealand"],
-                    image: "https://placehold.co/600x400/bbf7d0/15803d?text=New+Zealand",
-                    description: "The complete 24-day tour of both North and South islands, from the gold rush towns of the north to the adventure capital of the world in the south.",
-                    details: [
-                        { day: 2, route: "Cape Reinga", text: "Visit the northern tip of the island where the Pacific and the Tasman clash." },
-                        { day: 7, route: "Hot Water Beach", text: "Shovel a hole in the beach and wait for nature to fill your tub with hot water." },
-                        { day: 10, route: "Rotorua", text: "Visit Wai-o-Tapu geothermal wonders and experience a Tamaki Maori Village." },
-                        { day: 19, route: "Franz Josef Glacier", text: "Hike to the terminal face of the glacier or take a helicopter tour." },
-                        { day: 23, route: "Queenstown", text: "The adventure capital: Bungee jumping, skydiving, and jetboating." }
-                    ]
-                },
-                {
-                    id: 18,
-                    title: "Tropical Dream - Aussie Honeymoon",
-                    region: "Oceania",
-                    tags: ["Honeymoon", "Beach", "Rainforest", "Great Barrier Reef", "Australia"],
-                    image: "https://placehold.co/600x400/a5f3fc/0e7490?text=Aussie+Honeymoon",
-                    description: "A 16-day perfect tropical dream of cerulean waters, rainforest canopies, and magical sunsets, from the Daintree Rainforest to the Sydney Opera House.",
-                    details: [
-                        { day: 3, route: "Daintree Rainforest", text: "Explore the world's oldest tropical rainforest." },
-                        { day: 6, route: "Airlie Beach", text: "Gateway to the Whitsunday Islands and the iconic Whitehaven Beach." },
-                        { day: 8, route: "Great Barrier Reef", text: "Spend a full day snorkeling or diving in the world's largest coral reef system." },
-                        { day: 12, route: "Hunter Region", text: "Explore the Hunter Valley, Australia's oldest wine-growing region." },
-                        { day: 15, route: "Sydney", text: "Marvel at the Opera House and take on the Sydney Harbour Bridge Walk." }
-                    ]
-                },
-                {
-                    id: 19,
-                    title: "The Red Centre - Aussie Outback Adventure",
-                    region: "Oceania",
-                    tags: ["Outback", "Desert", "Culture", "Aboriginal", "Australia", "Uluru"],
-                    image: "https://placehold.co/600x400/fecaca/991b1b?text=Aussie+Outback",
-                    description: "A 21-day ode to a land lost in time. An untrodden trail through the red centre, from the wineyards of Clare Valley to the sacred rock of Uluru and the underground homes of Coober Pedy.",
-                    details: [
-                        { day: 7, route: "Ikara-Flinders Range", text: "Explore the ancient landscape, deep craters, and gorges." },
-                        { day: 10, route: "Coober Pedy", text: "Visit the 'Opal Capital of the World' and stay in an underground 'dugout' home." },
-                        { day: 12, route: "Uluru (Ayers Rock)", text: "Witness the spectacular sunset and sunrise over the sacred monolith." },
-                        { day: 18, route: "Kakadu National Park", text: "See ancient Aboriginal rock art at Ubirr and cruise the Yellow Water billabong." }
-                    ]
-                },
-                {
-                    id: 20,
-                    title: "Mountain Trails - North East & Nepal",
-                    region: "India",
-                    tags: ["Himalayan", "Hill Station", "Pilgrimage", "Tea Estates", "North East"],
-                    image: "https://placehold.co/600x400/d9f99d/3f6212?text=North+East",
-                    description: "A leisure trip with the right measure of fun and adventure. Breathe in the fresh Himalayan air from the tea estates of Darjeeling to the lakes of Gangtok and the temples of Kathmandu.",
-                    details: [
-                        { day: 2, route: "Gangtok - Nathula", text: "A day trip to the high-altitude Changu Lake. Optional visit to Nathula Pass." },
-                        { day: 5, route: "Darjeeling", text: "Early morning trip to Tiger Hill for sunrise over Kanchenjunga, visit Ghoom Monastery." },
-                        { day: 9, route: "Kathmandu - Nagarkot", text: "Witness the spectacular hues that color the mountains as the Sun breaks the horizon." }
-                    ]
-                },
-                {
-                    id: 21,
-                    title: "Uttar Pradesh Pilgrim Special",
-                    region: "India",
-                    tags: ["Pilgrimage", "Heritage", "Spiritual", "UP", "Varanasi", "Ayodhya"],
-                    image: "https://placehold.co/600x400/fed7aa/9a3412?text=Uttar+Pradesh",
-                    description: "A spiritual journey to the holy cities of Varanasi, Gaya, and Ayodhya. Take a holy dip in Ma Ganga, pay respects at Vishnu Padh, and see where the Ramayana comes alive.",
-                    details: [
-                        { day: 1, route: "Varanasi", text: "Holy dip in Ma Ganga, darshan at Kashi Vishwanath Temple, and witness the evening Ganga Aarti." },
-                        { day: 2, route: "Varanasi - Gaya", text: "Visit Vishnu Padh Temple for Pinda Daan ceremony." },
-                        { day: 5, route: "Allahabad - Ayodhya", text: "Visit Triveni Sangam, then proceed to Ayodhya for darshan of Ram Janmabhoomi." }
-                    ]
-                },
-                {
-                    id: 22,
-                    title: "The Soul of Incredible India - Odisha",
-                    region: "India",
-                    tags: ["Pilgrimage", "Leisure", "Beach", "Heritage", "Odisha"],
-                    image: "https://placehold.co/600x400/a5f3fc/0e7490?text=Odisha",
-                    description: "A complete tour starting with the inseparable name of Puri Jagannath. Visit the famous Chilika Lake, Asia's largest brackish water lagoon, and the Konark Sun Temple.",
-                    details: [
-                        { day: 2, route: "Bhubaneswar - Konark - Puri", text: "Visit Konark Sun Temple, then check-in at Puri for evening darshan at Jagannath Temple." },
-                        { day: 4, route: "Puri - Chilika Lake", text: "Day trip to Chilika Lake at Satapada, watch dolphins and visit the sea mouth." }
-                    ]
-                },
-                {
-                    id: 23,
-                    title: "Heart of Incredible India - Madhya Pradesh",
-                    region: "India",
-                    tags: ["Heritage", "Pilgrimage", "Wildlife", "MP"],
-                    image: "https://placehold.co/600x400/f0abfc/86198f?text=Madhya+Pradesh",
-                    description: "An enchanting journey from Bhopal's Sanchi Stupa and Bhimbetka rock shelters to the holy temples of Ujjain and the real-life 'Jungle Book' settings of Bandhavgarh.",
-                    details: [
-                        { day: 3, route: "Bhopal - Sanchi", text: "Visit the Great Sanchi Stupa, Ashoka Pillar, and Udaigiri Caves." },
-                        { day: 4, route: "Bhopal - Bhimbetka", text: "Go back in time visiting the earliest traces of Indian civilization in the rock shelters." },
-                        { day: 6, route: "Ujjain - Omkareshwar", text: "Darshan at Mahakaleshwar Temple and Omkareshwar Temple, two of the 12 Jyotirlingas." },
-                        { day: 9, route: "Jabalpur - Bandhavgarh", text: "Cruise the 'Marble Rocks' at Bheda Ghat, then proceed to Bandhavgarh for jungle safaris." }
-                    ]
-                },
-                {
-                    id: 24,
-                    title: "Maharashtra Special",
-                    region: "India",
-                    tags: ["Hill Station", "Heritage", "Pilgrimage", "Caves", "Maharashtra"],
-                    image: "https://placehold.co/600x400/99f6e4/0d9488?text=Maharashtra",
-                    description: "A holiday covering the popular tourist hubs of Mahabaleshwar, the world heritage sites of Ajanta and Ellora Caves in Aurangabad, and a darshan at Shirdi.",
-                    details: [
-                        { day: 2, route: "Mahabaleshwar", text: "Visit Arthur’s Seat and Pratapgad Fort. Enjoy the scenic view of the hill station." },
-                        { day: 4, route: "Aurangabad - Ellora Caves", text: "Explore the magnificent Ellora Caves, a UNESCO World Heritage site." },
-                        { day: 6, route: "Aurangabad - Shirdi", text: "Proceed to Shirdi for darshan at the Sai Baba Temple." }
-                    ]
-                },
-                {
-                    id: 25,
-                    title: "Gujarat Darshan",
-                    region: "India",
-                    tags: ["Heritage", "Pilgrimage", "Wildlife", "Gujarat", "Asiatic Lions"],
-                    image: "https://placehold.co/600x400/fecdd3/b91c1c?text=Gujarat",
-                    description: "An all-around trip of Gujarat, from the history of Sabarmati Ashram to the Asiatic Lions Pride at Gir National Park and the holy temples of Somnath and Dwaraka.",
-                    details: [
-                        { day: 2, route: "Ahmedabad", text: "Visit Sabarmati Ashram, Sardar Patel National Museum, and Jumma Masjid." },
-                        { day: 6, route: "Sasan Gir", text: "Enjoy a jungle safari in Gir National Park to spot the Asiatic Lions." },
-                        { day: 7, route: "Gir - Somnath", text: "Visit the holy Somnath Temple, one of the first Jyotirlingas." },
-                        { day: 9, route: "Dwaraka", text: "Visit the Dwarkadish Temple (Jagat Mandir) for darshan." }
-                    ]
-                },
-                {
-                    id: 26,
-                    title: "Do Dham Darshan - Uttarakhand",
-                    region: "India",
-                    tags: ["Pilgrimage", "Himalayan", "Spiritual", "Uttarakhand"],
-                    image: "https://placehold.co/600x400/e0e7ff/3730a3?text=Uttarakhand",
-                    description: "A holy pilgrimage starting with a dip in Ma Ganga at Haridwar, journeying to the abodes of Lord Shiva (Kedarnath) and Vishnu (Badrinath).",
-                    details: [
-                        { day: 2, route: "Delhi - Haridwar", text: "Holy dip in Ma Ganga. Visit Mansa Devi Temple by ropeway." },
-                        { day: 3, route: "Haridwar - Rishikesh", text: "Visit Shivananda Ashram, Ram Jhoola, Swarg Ashram, and Lakshman Jhoola." },
-                        { day: 6, route: "Rampur - Kedarnath", text: "Trek to Kedarnath from Gaurikund for darshan." },
-                        { day: 8, route: "Badrinath", text: "Darshan of Badri Narayan and visit Mana Village, the last village before the Tibetan border." }
-                    ]
-                },
-                {
-                    id: 27,
-                    title: "Vaishno Devi Darshan - Jammu & Kashmir",
-                    region: "India",
-                    tags: ["Pilgrimage", "Himalayan", "Spiritual", "Jammu", "Kashmir"],
-                    image: "https://placehold.co/600x400/fbcfe8/9d174d?text=Jammu+&+Kashmir",
-                    description: "An exclusive pilgrim holiday to Jammu for a safe and blessed darshan of Holy Vaishno Devi and Raghunath Temple.",
-                    details: [
-                        { day: 2, route: "Katra - Vaishno Devi", text: "Full day for darshan of Katra Vaishno Devi. Return to hotel." },
-                        { day: 4, route: "Jammu", text: "Morning darshan at Jammu Raghunath Temple before departure." }
-                    ]
-                },
-                {
-                    id: 28,
-                    title: "Beach, Shore & Promenade - Tamil Nadu",
-                    region: "India",
-                    tags: ["Pilgrimage", "Beach", "Waterfront", "Heritage", "Tamil Nadu", "Puducherry"],
-                    image: "https://placehold.co/600x400/ffedd5/9a3412?text=Tamil+Nadu",
-                    description: "A perfect coastal getaway to Chennai and Puducherry. Experience the rich Dravidian culture at Kapaleeshwarar Temple and the French colonial love at Puducherry.",
-                    details: [
-                        { day: 2, route: "Chennai - Mahabalipuram", text: "Visit Dakshinachitra, a living museum, and the famous Shore Temples of Mahabalipuram." },
-                        { day: 3, route: "Mahabalipuram - Puducherry", text: "Explore Aurobindo Ashram, Auroville, and the French Quarter." },
-                        { day: 4, route: "Puducherry - Kanchipuram", text: "Visit the 'City of a Thousand Temples', including Kailasanathar Temple." }
-                    ]
-                }
-            ];
-            
-            let portfolioScrollPosition = 0; // To remember where the user was
+        // Portfolio Data
+        const portfolioData = [
+            {
+                id: 1,
+                title: "Postcard Sunsets! (US West Coast)",
+                region: "North America",
+                tags: ["Road Trip", "Coastal", "Nature", "HNI"],
+                image: "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=800",
+                description: "A 20-day, multi-state itinerary focused on postcard sunsets and offbeat discoveries along the Pacific Coast Highway.",
+                details: [
+                    { day: 1, route: "Seattle → Olympia", text: "Explore Pike Place Market, then drive to Washington's state capital." },
+                    { day: 7, route: "Portland → Cannon Beach", text: "Visit Haystack Rock and explore the charming coastal town." },
+                    { day: 9, route: "Newport → Devil's Punch Bowl", text: "Stumble upon Sea Lion Caves and watch whales at the Punch Bowl." },
+                    { day: 15, route: "San Francisco → Big Sur", text: "Drive the iconic Highway 1, stopping at Bixby Creek Bridge." }
+                ]
+            },
+            {
+                id: 2,
+                title: "Yalla Morocco!",
+                region: "Africa",
+                tags: ["Exotic", "Culture", "Desert", "HNI"],
+                image: "https://images.unsplash.com/photo-1489749798305-4fea3ae63d43?w=800",
+                description: "A 15-day medinas & markets journey designed for high-touch, experiential HNI clients.",
+                details: [
+                    { day: 1, route: "Marrakech", text: "Arrive and dive into the Jemaa el-Fna square chaos." },
+                    { day: 5, route: "Fes → Chefchaouen", text: "Explore ancient medina, then drive to the Blue City." },
+                    { day: 8, route: "Erg Chebbi", text: "Camel trek into Sahara for luxury desert camp night." },
+                    { day: 14, route: "Rabat → Casablanca", text: "Visit the Kasbah before ending at Hassan II Mosque." }
+                ]
+            },
+            {
+                id: 3,
+                title: "All of Vietnam",
+                region: "Asia",
+                tags: ["Overland", "Culture", "History", "Food"],
+                image: "https://images.unsplash.com/photo-1528127269322-539801943592?w=800",
+                description: "A 22-day journey through natural beauty and cultural complexity, from megacities to hill-tribe villages.",
+                details: [
+                    { day: 2, route: "Hanoi → Ha Long Bay", text: "Board traditional junk for overnight cruise among limestone islands." },
+                    { day: 7, route: "Vinh → Hue", text: "Cross DMZ, visit war sites before arriving in Imperial City." },
+                    { day: 16, route: "Da Lat → Ho Chi Minh", text: "Descend from City of Eternal Spring to bustling Saigon." }
+                ]
+            },
+            {
+                id: 4,
+                title: "A Nerd's Adventure of New Zealand",
+                region: "Oceania",
+                tags: ["LOTR", "Nerds Tour", "Nature", "Adventure"],
+                image: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800",
+                description: "The fabled lands of Lord of the Rings come alive. 12-day tour from Hobbiton to Weta Cave.",
+                details: [
+                    { day: 5, route: "Hobbiton → Waitomo", text: "Visit movie set, followed by magical glow worm caves." },
+                    { day: 7, route: "Rotorua → Wai-o-Tapu", text: "Explore geothermal wonders and Tamaki Maori Village." },
+                    { day: 11, route: "Wellington", text: "Visit Te Papa Museum and the Weta Cave workshop." }
+                ]
+            },
+            {
+                id: 5,
+                title: "Claws and Hooves - Botswana Safari",
+                region: "Africa",
+                tags: ["Safari", "Wildlife", "Luxury", "HNI"],
+                image: "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=800",
+                description: "16-day luxury safari in the greatest wildlife destination, from Okavango Delta to Chobe.",
+                details: [
+                    { day: 3, route: "Okavango Delta", text: "Explore by mokoro, spotting elephants in the flood plain." },
+                    { day: 7, route: "Khwai Concession", text: "Known for leopards and wild dogs." },
+                    { day: 13, route: "Chobe National Park", text: "Game drives to see vast elephant herds." }
+                ]
+            },
+            {
+                id: 6,
+                title: "Forts & Forests of Rajasthan",
+                region: "India",
+                tags: ["Culture", "History", "Royalty", "Wildlife"],
+                image: "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800",
+                description: "6-day compact holiday exploring the Land of Kings, from Jaipur's palaces to Ranthambore's tigers.",
+                details: [
+                    { day: 2, route: "Jaipur", text: "Visit Jantar Mantar, City Palace, Hawa Mahal, Amber Fort." },
+                    { day: 4, route: "Ranthambore", text: "Full day jungle safaris seeking tigers." },
+                    { day: 5, route: "Udaipur", text: "Boat ride on Lake Pichola in City of Lakes." }
+                ]
+            },
+            {
+                id: 7,
+                title: "God's Own Country - Kerala",
+                region: "India",
+                tags: ["Nature", "Backwaters", "Relaxation", "Culture"],
+                image: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=800",
+                description: "7-day classic package from Cochin's colonial history to Alleppey's backwaters and Munnar's tea plantations.",
+                details: [
+                    { day: 2, route: "Kovalam", text: "Visit Padmanabhaswamy Temple, relax on famous beach." },
+                    { day: 4, route: "Alleppey", text: "Board traditional houseboat for overnight backwater cruise." },
+                    { day: 6, route: "Munnar", text: "Explore Paradise on Earth with rolling tea estates." }
+                ]
+            },
+            {
+                id: 8,
+                title: "Route 66 - The Great American Road Trip",
+                region: "North America",
+                tags: ["Road Trip", "Iconic", "History", "Culture"],
+                image: "https://images.unsplash.com/photo-1464219789935-c2d9d9aba644?w=800",
+                description: "19-day journey from Chicago to Santa Monica capturing the spirit of the Mother Road.",
+                details: [
+                    { day: 1, route: "Chicago → Springfield", text: "Begin journey, leaving city for historic highway." },
+                    { day: 10, route: "Santa Fe → Durango", text: "Art and culture before heading to mountains." },
+                    { day: 14, route: "Grand Canyon → Las Vegas", text: "Grandest of canyons before Vegas lights." }
+                ]
+            }
+        ];
 
-            // --- 1. Render Initial Grid ---
-            function renderGrid(items) {
-                grid.innerHTML = '';
-                if (items.length === 0) {
-                    grid.innerHTML = `<p class="text-gray-500 col-span-full text-center">No itineraries match your filter.</p>`;
-                    return;
-                }
-                items.forEach(item => {
-                    const card = document.createElement('div');
-                    card.className = 'portfolio-card';
-                    card.innerHTML = `
-                        <div class="w-full h-48 bg-gray-200">
-                            <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover">
-                        </div>
-                        <div class="p-5">
-                            <span class="text-sm font-semibold swiggy-orange">${item.region}</span>
-                            <h4 class="mt-1 text-xl font-bold text-gray-900 truncate">${item.title}</h4>
-                            <p class="mt-2 text-sm text-gray-600 line-clamp-2">${item.description}</p>
-                            <div class="mt-3 flex flex-wrap gap-2">
-                                ${item.tags.slice(0, 3).map(tag => `<span class="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full">${tag}</span>`).join('')}
-                            </div>
-                        </div>
-                    `;
-                    card.addEventListener('click', () => showDetailView(item));
-                    grid.appendChild(card);
-                });
+        // Add more itineraries for each region
+        const additionalItineraries = [
+            {
+                id: 9,
+                title: "Nomadic Trail of Mongolia",
+                region: "Asia",
+                tags: ["Offbeat", "Culture", "Nomadic", "Desert"],
+                image: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800",
+                description: "19-day off-grid adventure into land of dirt tracks, ger camps, and endless stars.",
+                details: [
+                    { day: 5, route: "Gobi Desert", text: "Explore Yolyn Am ice-filled gorge." },
+                    { day: 7, route: "Khongoryn Els", text: "Climb the Singing Dunes, experience camel ride." },
+                    { day: 15, route: "Hustain NP", text: "Track rare Przewalski horses unique to Mongolia." }
+                ]
+            },
+            {
+                id: 10,
+                title: "Wine & Wild - South Africa",
+                region: "Africa",
+                tags: ["Wine", "Wildlife", "Luxury", "Gourmet"],
+                image: "https://images.unsplash.com/photo-1484318571209-661cf29a69c3?w=800",
+                description: "13-day holiday from Franschhoek vineyards to Shamwari game reserves.",
+                details: [
+                    { day: 2, route: "Franschhoek", text: "Move to vineyards for gourmet food and wine." },
+                    { day: 7, route: "Knysna", text: "Explore famous Knysna Heads, enjoy fresh oysters." },
+                    { day: 10, route: "Shamwari", text: "Luxury lodge, game drives, Born Free rescue center." }
+                ]
+            },
+            {
+                id: 11,
+                title: "Tropical Dream - Aussie Honeymoon",
+                region: "Oceania",
+                tags: ["Honeymoon", "Beach", "Reef", "Rainforest"],
+                image: "https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=800",
+                description: "16-day dream of cerulean waters from Daintree to Sydney Opera House.",
+                details: [
+                    { day: 3, route: "Daintree Rainforest", text: "Explore world's oldest tropical rainforest." },
+                    { day: 8, route: "Great Barrier Reef", text: "Full day snorkeling in world's largest reef." },
+                    { day: 15, route: "Sydney", text: "Opera House and Harbour Bridge Walk." }
+                ]
+            },
+            {
+                id: 12,
+                title: "Mountain Trails - North East India",
+                region: "India",
+                tags: ["Himalayan", "Hill Station", "Tea Estates"],
+                image: "https://images.unsplash.com/photo-1606296737805-b3c6e29b15f4?w=800",
+                description: "Leisure trip from Darjeeling tea estates to Gangtok lakes and Kathmandu temples.",
+                details: [
+                    { day: 2, route: "Gangtok → Nathula", text: "Day trip to Changu Lake, optional Nathula Pass." },
+                    { day: 5, route: "Darjeeling", text: "Sunrise at Tiger Hill over Kanchenjunga." },
+                    { day: 9, route: "Kathmandu", text: "Spectacular sunrise from Nagarkot." }
+                ]
+            }
+        ];
+
+        const allItineraries = [...portfolioData, ...additionalItineraries];
+
+        // Render Portfolio Grid
+        function renderPortfolio(items) {
+            const grid = document.getElementById('portfolioGrid');
+            grid.innerHTML = '';
+            
+            if (items.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #999; font-size: 18px;">No itineraries match your search.</p>';
+                return;
             }
 
-            // --- 2. Filtering Logic ---
-            function filterItems() {
-                const searchTerm = searchBar.value.toLowerCase();
-                const activeFilter = document.querySelector('#filter-buttons .filter-btn.active').dataset.filter;
-
-                const filteredItems = allItineraries.filter(item => {
-                    const matchesFilter = activeFilter === 'all' || item.region.toLowerCase() === activeFilter.toLowerCase();
-                    const matchesSearch = item.title.toLowerCase().includes(searchTerm) || 
-                                          item.description.toLowerCase().includes(searchTerm) ||
-                                          item.tags.some(tag => tag.toLowerCase().includes(searchTerm));
-                    return matchesFilter && matchesSearch;
-                });
-
-                renderGrid(filteredItems);
-            }
-
-            filterButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    filterButtons.forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-                    filterItems();
-                });
-            });
-
-            searchBar.addEventListener('input', filterItems);
-
-            // --- 3. Detail View Logic ---
-            function showDetailView(item) {
-                // Save scroll position before hiding
-                portfolioScrollPosition = window.pageYOffset;
-                
-                // Populate Detail View
-                detailTitle.textContent = item.title;
-                detailImage.src = item.image;
-                detailImage.alt = item.title;
-                detailMeta.innerHTML = `
-                    <span class="inline-block bg-orange-100 text-swiggy-orange font-semibold px-3 py-1 rounded-full">${item.region}</span>
-                    ${item.tags.map(tag => `<span class="inline-block bg-gray-100 text-gray-600 px-3 py-1 rounded-full">${tag}</span>`).join('')}
-                `;
-                detailDescription.textContent = item.description;
-                detailDays.innerHTML = item.details.map(day => `
-                    <div class="border border-gray-200 p-4 rounded-lg bg-white shadow-sm">
-                        <p class="font-bold text-gray-800">Day ${day.day}: ${day.route}</p>
-                        <p class="text-gray-600 text-sm mt-1">${day.text}</p>
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'portfolio-card';
+                card.onclick = () => openModal(item);
+                card.innerHTML = `
+                    <img src="${item.image}" alt="${item.title}" class="card-image">
+                    <div class="card-content">
+                        <div class="card-region">${item.region}</div>
+                        <div class="card-title">${item.title}</div>
+                        <div class="card-description">${item.description}</div>
+                        <div class="card-tags">
+                            ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        </div>
                     </div>
-                `).join('');
-
-                // Hide Main Content & Show Detail View
-                mainContentWrapper.classList.add('hidden');
-                detailViewSection.classList.remove('hidden');
-                
-                // Scroll to top of detail view
-                window.scrollTo(0, 0); 
-                document.body.style.overflow = 'auto'; // Ensure scrolling is enabled
-            }
-
-            function hideDetailView() {
-                // Hide Detail View & Show Main Content
-                detailViewSection.classList.add('hidden');
-                mainContentWrapper.classList.remove('hidden');
-                
-                // Restore scroll position
-                window.scrollTo(0, portfolioScrollPosition);
-                document.body.style.overflow = 'auto'; 
-            }
-            
-            backButton.addEventListener('click', hideDetailView);
-            
-            // --- 4. Chart.js Logic ---
-            const chartData = allItineraries.reduce((acc, item) => {
-                acc[item.region] = (acc[item.region] || 0) + 1;
-                return acc;
-            }, {});
-            
-            const ctx = document.getElementById('itineraryChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(chartData),
-                    datasets: [{
-                        label: '# of Itineraries',
-                        data: Object.values(chartData),
-                        backgroundColor: [
-                            'rgba(252, 128, 25, 0.6)', // Swiggy Orange
-                            'rgba(54, 162, 235, 0.6)', // Blue
-                            'rgba(255, 206, 86, 0.6)', // Yellow
-                            'rgba(75, 192, 192, 0.6)', // Teal
-                            'rgba(153, 102, 255, 0.6)', // Purple
-                            'rgba(255, 159, 64, 0.6)'  // Orange variant
-                        ],
-                        borderColor: [
-                            'rgba(252, 128, 25, 1)',
-                            'rgba(54, 162, 235, 1)',
-                            'rgba(255, 206, 86, 1)',
-                            'rgba(75, 192, 192, 1)',
-                            'rgba(153, 102, 255, 1)',
-                            'rgba(255, 159, 64, 1)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return ` ${context.parsed.y} Itineraries`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { 
-                                stepSize: Math.ceil(Math.max(...Object.values(chartData)) / 5), // Auto step size
-                                precision: 0 // Ensure whole numbers
-                             } 
-                        }
-                    }
-                }
+                `;
+                grid.appendChild(card);
             });
+        }
 
-            // --- 5. Nav Link Active State ---
-            const navLinks = document.querySelectorAll('.nav-link');
-            const sections = document.querySelectorAll('.main-section'); // Only target main sections
+        // Filter Functionality
+        let currentFilter = 'all';
+        let currentSearch = '';
 
-            window.addEventListener('scroll', () => {
-                // Don't update nav if detail view is showing
-                if (!detailViewSection.classList.contains('hidden')) return; 
-
-                let current = 'home'; // Default to home
-                let currentSectionBottom = 0;
-
-                sections.forEach(section => {
-                    const sectionTop = section.offsetTop;
-                    const sectionHeight = section.offsetHeight;
-                    const sectionBottom = sectionTop + sectionHeight;
-                    
-                    // Check if the top of the section is within the viewport (with offset)
-                    if (pageYOffset >= sectionTop - 100) {
-                        // Prioritize the section whose bottom edge is currently higher up the page
-                         if (sectionBottom > currentSectionBottom) {
-                              current = section.getAttribute('id');
-                              currentSectionBottom = sectionBottom; 
-                         }
-                    }
-                });
-                
-                 // Special case for portfolio if it's visible but below the threshold due to large height
-                 const portfolioSection = document.getElementById('portfolio');
-                 if (portfolioSection && pageYOffset >= portfolioSection.offsetTop - 100 && pageYOffset < portfolioSection.offsetTop + portfolioSection.offsetHeight - 100) {
-                      current = 'portfolio';
-                 }
-
-
-                navLinks.forEach(link => {
-                    link.classList.remove('active');
-                    if (link.dataset.navlink === current) {
-                        link.classList.add('active');
-                    }
-                });
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.dataset.filter;
+                applyFilters();
             });
-            
-            // Handle clicks on nav links for smooth scroll and closing detail view
-            navLinks.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    if (!detailViewSection.classList.contains('hidden')) {
-                        hideDetailView();
-                        // Need a small delay for the main content to become visible before scrolling
-                        setTimeout(() => {
-                           const targetSection = document.querySelector(link.getAttribute('href'));
-                           if(targetSection) {
-                               targetSection.scrollIntoView({ behavior: 'smooth' });
-                           }
-                        }, 100); 
-                    } else {
-                         const targetSection = document.querySelector(link.getAttribute('href'));
-                         if(targetSection) {
-                             targetSection.scrollIntoView({ behavior: 'smooth' });
-                         }
-                    }
-                    // Update active state immediately on click
-                    navLinks.forEach(l => l.classList.remove('active'));
-                    link.classList.add('active');
-                });
-            });
-            
-            // --- 6. Resume Link ---
-            document.getElementById('resume-link').onclick = (e) => {
-                e.preventDefault();
-                alert('In a live version, this would link to "VPG_Resume_2025 (M).pdf"');
-            };
-
-            // --- Initial Render ---
-            renderGrid(allItineraries);
         });
+
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            currentSearch = e.target.value.toLowerCase();
+            applyFilters();
+        });
+
+        function applyFilters() {
+            let filtered = allItineraries;
+            
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(item => item.region === currentFilter);
+            }
+            
+            if (currentSearch) {
+                filtered = filtered.filter(item => 
+                    item.title.toLowerCase().includes(currentSearch) ||
+                    item.description.toLowerCase().includes(currentSearch) ||
+                    item.tags.some(tag => tag.toLowerCase().includes(currentSearch))
+                );
+            }
+            
+            renderPortfolio(filtered);
+        }
+
+        // Modal Functions
+        function openModal(item) {
+            const modal = document.getElementById('itineraryModal');
+            document.getElementById('modalImage').src = item.image;
+            document.getElementById('modalTitle').textContent = item.title;
+            document.getElementById('modalDescription').textContent = item.description;
+            
+            document.getElementById('modalMeta').innerHTML = `
+                <span class="meta-tag">${item.region}</span>
+                ${item.tags.map(tag => `<span class="meta-tag">${tag}</span>`).join('')}
+            `;
+            
+            document.getElementById('modalItinerary').innerHTML = item.details.map(day => `
+                <div class="itinerary-day">
+                    <div class="day-number">DAY ${day.day}</div>
+                    <div class="day-route">${day.route}</div>
+                    <div class="day-description">${day.text}</div>
+                </div>
+            `).join('');
+            
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('itineraryModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Page Navigation
+        function updatePageDisplay() {
+            document.getElementById('currentPage').textContent = currentPage;
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = currentPage === totalPages;
+
+            for (let i = 1; i <= totalPages; i++) {
+                const page = document.getElementById('page' + i);
+                const dot = document.querySelector(`.nav-dot[data-page="${i}"]`);
+                
+                if (i === currentPage) {
+                    page.classList.add('active');
+                    dot.classList.add('active');
+                } else {
+                    page.classList.remove('active');
+                    dot.classList.remove('active');
+                }
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                updatePageDisplay();
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                updatePageDisplay();
+            }
+        }
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextPage();
+            if (e.key === 'ArrowLeft') prevPage();
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Nav Dots Click
+        document.querySelectorAll('.nav-dot').forEach(dot => {
+            dot.addEventListener('click', function() {
+                currentPage = parseInt(this.dataset.page);
+                updatePageDisplay();
+            });
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('itineraryModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Initialize
+        updatePageDisplay();
+        renderPortfolio(allItineraries);
     </script>
 </body>
 </html>
-
