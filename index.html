@@ -119,12 +119,12 @@
         }
 
         @keyframes pageSlideIn {
-            from { 
-                opacity: 0; 
+            from {
+                opacity: 0;
                 transform: translateX(100px) rotateY(-15deg);
             }
-            to { 
-                opacity: 1; 
+            to {
+                opacity: 1;
                 transform: translateX(0) rotateY(0);
             }
         }
@@ -432,6 +432,11 @@
             line-height: 1.6;
             margin-bottom: 15px;
             transition: color 0.3s ease;
+            /* Limit description lines */
+             overflow: hidden;
+             display: -webkit-box;
+             -webkit-line-clamp: 2; /* number of lines to show */
+             -webkit-box-orient: vertical;
         }
 
         .portfolio-card:hover .card-description {
@@ -596,6 +601,22 @@
             line-height: 1.6;
         }
 
+        .modal-footer-note {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-style: italic;
+            font-size: 15px;
+            color: #888;
+        }
+
+        .modal-footer-note a {
+            color: #FC8019;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
         /* Skill Tags */
         .skill-tags {
             display: flex;
@@ -699,7 +720,7 @@
 </head>
 <body>
     <div class="page-indicator">Page <span id="currentPage">1</span> of 10</div>
-    
+
     <!-- Navigation Dots -->
     <div class="nav-dots">
         <div class="nav-dot active" data-page="1" data-label="Cover"></div>
@@ -713,7 +734,7 @@
         <div class="nav-dot" data-page="9" data-label="Portfolio"></div>
         <div class="nav-dot" data-page="10" data-label="Contact"></div>
     </div>
-    
+
     <div class="book-container">
         <!-- Page 1: Cover -->
         <div class="page active" id="page1">
@@ -909,14 +930,20 @@
                 <div class="modal-meta" id="modalMeta"></div>
                 <p class="modal-description" id="modalDescription"></p>
                 <h2 style="margin-top: 40px; margin-bottom: 20px; border-top: 3px solid #FC8019; padding-top: 20px;">Day-by-Day Highlights</h2>
-                <div id="modalItinerary"></div>
+                <div id="modalItinerary">
+                     <!-- Itinerary days added by JS -->
+                </div>
+                 <!-- Added footer note -->
+                 <p class="modal-footer-note">
+                     Want the full story? <a href="#page10">Visit page 10</a> to connect.
+                 </p>
             </div>
         </div>
     </div>
 
     <div class="nav-controls">
-        <button class="nav-btn" id="prevBtn" onclick="prevPage()">← Previous</button>
-        <button class="nav-btn" id="nextBtn" onclick="nextPage()">Next →</button>
+        <button class="nav-btn" id="prevBtn">← Previous</button>
+        <button class="nav-btn" id="nextBtn">Next →</button>
     </div>
 
     <script>
@@ -925,20 +952,19 @@
 
         // Portfolio Data
         const portfolioData = [
-            {
+             {
                 id: 1,
                 title: "Postcard Sunsets! (US West Coast)",
                 region: "North America",
                 tags: ["Road Trip", "Coastal", "Nature", "HNI"],
                 image: "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=800",
-                description: "A 20-day, multi-state itinerary focused on postcard sunsets and offbeat discoveries along the Pacific Coast Highway.",
+                description: "A 20-day, multi-state itinerary focused on postcard sunsets and offbeat discoveries along the Pacific Coast Highway...",
                 details: [
                     { day: 1, route: "Seattle → Olympia", text: "Explore Pike Place Market, then drive to Washington's state capital." },
                     { day: 7, route: "Portland → Cannon Beach", text: "Visit Haystack Rock and explore the charming coastal town." },
                     { day: 9, route: "Newport → Devil's Punch Bowl", text: "Stumble upon Sea Lion Caves and watch whales at the Punch Bowl." },
                     { day: 15, route: "San Francisco → Big Sur", text: "Drive the iconic Highway 1, stopping at Bixby Creek Bridge." }
                 ]
-                description: "To unlock the complete itinerary, proceed to page 10",
             },
             {
                 id: 2,
@@ -953,7 +979,6 @@
                     { day: 8, route: "Erg Chebbi", text: "Camel trek into Sahara for luxury desert camp night." },
                     { day: 14, route: "Rabat → Casablanca", text: "Visit the Kasbah before ending at Hassan II Mosque." }
                 ]
-                description: "To unlock the complete itinerary, proceed to page 10",
             },
             {
                 id: 3,
@@ -967,7 +992,6 @@
                     { day: 7, route: "Vinh → Hue", text: "Cross DMZ, visit war sites before arriving in Imperial City." },
                     { day: 16, route: "Da Lat → Ho Chi Minh", text: "Descend from City of Eternal Spring to bustling Saigon." }
                 ]
-                description: "To unlock the complete itinerary, proceed to page 10",
             },
             {
                 id: 4,
@@ -981,7 +1005,6 @@
                     { day: 7, route: "Rotorua → Wai-o-Tapu", text: "Explore geothermal wonders and Tamaki Maori Village." },
                     { day: 11, route: "Wellington", text: "Visit Te Papa Museum and the Weta Cave workshop." }
                 ]
-                description: "To unlock the complete itinerary, proceed to page 10",
             },
             {
                 id: 5,
@@ -995,7 +1018,6 @@
                     { day: 7, route: "Khwai Concession", text: "Known for leopards and wild dogs." },
                     { day: 13, route: "Chobe National Park", text: "Game drives to see vast elephant herds." }
                 ]
-                description: "To unlock the complete itinerary, proceed to page 10",
             },
             {
                 id: 6,
@@ -1009,7 +1031,6 @@
                     { day: 4, route: "Ranthambore", text: "Full day jungle safaris seeking tigers." },
                     { day: 5, route: "Udaipur", text: "Boat ride on Lake Pichola in City of Lakes." }
                 ]
-                description: "To unlock the complete itinerary, proceed to page 10",
             },
             {
                 id: 7,
@@ -1023,7 +1044,6 @@
                     { day: 4, route: "Alleppey", text: "Board traditional houseboat for overnight backwater cruise." },
                     { day: 6, route: "Munnar", text: "Explore Paradise on Earth with rolling tea estates." }
                 ]
-                description: "To unlock the complete itinerary, proceed to page 10",
             },
             {
                 id: 8,
@@ -1037,25 +1057,23 @@
                     { day: 10, route: "Santa Fe → Durango", text: "Art and culture before heading to mountains." },
                     { day: 14, route: "Grand Canyon → Las Vegas", text: "Grandest of canyons before Vegas lights." }
                 ]
-                description: "To unlock the complete itinerary, proceed to page 10",
             }
         ];
 
-        // Add more itineraries for each region
+        // Combine portfolio data
         const additionalItineraries = [
-            {
+             {
                 id: 9,
                 title: "Nomadic Trail of Mongolia",
                 region: "Asia",
                 tags: ["Offbeat", "Culture", "Nomadic", "Desert"],
-                image: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800",
+                image: "https://images.unsplash.com/photo-1535219241072-7d3c28a49a5c?w=800",
                 description: "19-day off-grid adventure into land of dirt tracks, ger camps, and endless stars.",
                 details: [
                     { day: 5, route: "Gobi Desert", text: "Explore Yolyn Am ice-filled gorge." },
                     { day: 7, route: "Khongoryn Els", text: "Climb the Singing Dunes, experience camel ride." },
                     { day: 15, route: "Hustain NP", text: "Track rare Przewalski horses unique to Mongolia." }
                 ]
-                description: "To unlock the complete itinerary, proceed to page 10",
             },
             {
                 id: 10,
@@ -1069,7 +1087,6 @@
                     { day: 7, route: "Knysna", text: "Explore famous Knysna Heads, enjoy fresh oysters." },
                     { day: 10, route: "Shamwari", text: "Luxury lodge, game drives, Born Free rescue center." }
                 ]
-                description: "To unlock the complete itinerary, proceed to page 10",
             },
             {
                 id: 11,
@@ -1083,7 +1100,6 @@
                     { day: 8, route: "Great Barrier Reef", text: "Full day snorkeling in world's largest reef." },
                     { day: 15, route: "Sydney", text: "Opera House and Harbour Bridge Walk." }
                 ]
-                description: "To unlock the complete itinerary, proceed to page 10",
             },
             {
                 id: 12,
@@ -1097,17 +1113,18 @@
                     { day: 5, route: "Darjeeling", text: "Sunrise at Tiger Hill over Kanchenjunga." },
                     { day: 9, route: "Kathmandu", text: "Spectacular sunrise from Nagarkot." }
                 ]
-                description: "To unlock the complete itinerary, proceed to page 10",
             }
+            // Add more entries based on your CSVs here...
         ];
 
-        const allItineraries = [...portfolioData, ...additionalItineraries];
+        const allItineraries = [...portfolioData, ...additionalItineraries]; // Combined data
+
 
         // Render Portfolio Grid
         function renderPortfolio(items) {
             const grid = document.getElementById('portfolioGrid');
             grid.innerHTML = '';
-            
+
             if (items.length === 0) {
                 grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #999; font-size: 18px;">No itineraries match your search.</p>';
                 return;
@@ -1122,9 +1139,9 @@
                     <div class="card-content">
                         <div class="card-region">${item.region}</div>
                         <div class="card-title">${item.title}</div>
-                        <div class="card-description">${item.description}</div>
+                        <div class="card-description">${item.description.substring(0, 100)}...</div>
                         <div class="card-tags">
-                            ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                            ${item.tags.slice(0, 3).map(tag => `<span class="tag">${tag}</span>`).join('')}
                         </div>
                     </div>
                 `;
@@ -1152,19 +1169,19 @@
 
         function applyFilters() {
             let filtered = allItineraries;
-            
+
             if (currentFilter !== 'all') {
                 filtered = filtered.filter(item => item.region === currentFilter);
             }
-            
+
             if (currentSearch) {
-                filtered = filtered.filter(item => 
+                filtered = filtered.filter(item =>
                     item.title.toLowerCase().includes(currentSearch) ||
-                    item.description.toLowerCase().includes(currentSearch) ||
+                    (item.description && item.description.toLowerCase().includes(currentSearch)) || // Check if description exists
                     item.tags.some(tag => tag.toLowerCase().includes(currentSearch))
                 );
             }
-            
+
             renderPortfolio(filtered);
         }
 
@@ -1173,21 +1190,29 @@
             const modal = document.getElementById('itineraryModal');
             document.getElementById('modalImage').src = item.image;
             document.getElementById('modalTitle').textContent = item.title;
-            document.getElementById('modalDescription').textContent = item.description;
-            
+             // Use the full description for the modal, check if it exists
+            document.getElementById('modalDescription').textContent = item.description || "No description available.";
+
             document.getElementById('modalMeta').innerHTML = `
                 <span class="meta-tag">${item.region}</span>
                 ${item.tags.map(tag => `<span class="meta-tag">${tag}</span>`).join('')}
             `;
-            
-            document.getElementById('modalItinerary').innerHTML = item.details.map(day => `
-                <div class="itinerary-day">
-                    <div class="day-number">DAY ${day.day}</div>
-                    <div class="day-route">${day.route}</div>
-                    <div class="day-description">${day.text}</div>
-                </div>
-            `).join('');
-            
+
+             // Check if details exist before mapping
+            let itineraryHTML = '';
+             if (item.details && Array.isArray(item.details)) {
+                itineraryHTML = item.details.map(day => `
+                    <div class="itinerary-day">
+                        <div class="day-number">DAY ${day.day}</div>
+                        <div class="day-route">${day.route}</div>
+                        <div class="day-description">${day.text}</div>
+                    </div>
+                `).join('');
+            } else {
+                 itineraryHTML = '<p>No day-by-day details available.</p>';
+            }
+            document.getElementById('modalItinerary').innerHTML = itineraryHTML;
+
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
         }
@@ -1206,13 +1231,13 @@
             for (let i = 1; i <= totalPages; i++) {
                 const page = document.getElementById('page' + i);
                 const dot = document.querySelector(`.nav-dot[data-page="${i}"]`);
-                
+
                 if (i === currentPage) {
                     page.classList.add('active');
-                    dot.classList.add('active');
+                    if(dot) dot.classList.add('active');
                 } else {
                     page.classList.remove('active');
-                    dot.classList.remove('active');
+                     if(dot) dot.classList.remove('active');
                 }
             }
 
@@ -1232,12 +1257,26 @@
                 updatePageDisplay();
             }
         }
+        
+        function goToPage(pageNumber) {
+            if (pageNumber >= 1 && pageNumber <= totalPages) {
+                 currentPage = pageNumber;
+                 updatePageDisplay();
+            }
+        }
+
+        // --- Attach button listeners ---
+        document.getElementById('prevBtn').addEventListener('click', prevPage);
+        document.getElementById('nextBtn').addEventListener('click', nextPage);
 
         // Keyboard Navigation
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowRight') nextPage();
-            if (e.key === 'ArrowLeft') prevPage();
-            if (e.key === 'Escape') closeModal();
+            if (document.getElementById('itineraryModal').classList.contains('active')) {
+                if (e.key === 'Escape') closeModal();
+            } else {
+                 if (e.key === 'ArrowRight') nextPage();
+                 if (e.key === 'ArrowLeft') prevPage();
+            }
         });
 
         // Nav Dots Click
