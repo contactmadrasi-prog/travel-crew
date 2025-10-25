@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vishnu Priya G - Swiggy CREW Application</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/4.1.0/turn.min.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f3f3f3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* Colors */
+        :root {
+            --swiggy-orange: #FC8019;
+            --swiggy-black: #1c1c1c;
+            --swiggy-grey: #4a4a4a;
+        }
+
+        /* The magazine container */
+        #magazine-container {
+            width: 1000px;
+            height: 700px;
+        }
+
+        #magazine {
+            width: 1000px;
+            height: 700px;
+        }
+
+        /* All pages */
+        #magazine .page {
+            width: 500px;
+            height: 700px;
+            background-color: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            box-sizing: border-box; /* Important for padding */
+        }
+
+        /* Page content styling */
+        .page h1 {
+            font-size: 2.5rem;
+            color: var(--swiggy-black);
+            margin: 0;
+            line-height: 1.2;
+        }
+        
+        .page h2 {
+            font-size: 1.8rem;
+            color: var(--swiggy-orange);
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--swiggy-orange);
+            padding-bottom: 10px;
+        }
+        
+        .page h3 {
+            font-size: 1.2rem;
+            color: var(--swiggy-black);
+            font-weight: 600;
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+
+        .page p, .page li {
+            font-size: 0.9rem;
+            color: var(--swiggy-grey);
+            line-height: 1.7;
+            text-align: left;
+        }
+        
+        .page ul {
+            list-style-type: none;
+            padding-left: 0;
+            width: 100%;
+        }
+        
+        .page li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .page li:before {
+            content: '•';
+            color: var(--swiggy-orange);
+            font-weight: bold;
+            display: inline-block;
+            position: absolute;
+            left: 0;
+            font-size: 1.2rem;
+        }
+        
+        .page a {
+            color: var(--swiggy-orange);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* Cover Page (Page 1) */
+        .page.cover {
+            background-color: var(--swiggy-black);
+            color: white;
+            text-align: center;
+        }
+        .page.cover h1 {
+            color: white;
+            font-size: 3rem;
+        }
+        .page.cover h3 {
+            color: var(--swiggy-orange);
+            font-size: 1.5rem;
+            font-weight: 400;
+        }
+        .page.cover .job-title {
+            font-size: 1.2rem;
+            color: #ccc;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin: 30px 0;
+        }
+        .page.cover .disclaimer {
+            font-size: 0.8rem;
+            color: #888;
+            position: absolute;
+            bottom: 40px;
+        }
+
+        /* Back Cover (Last Page) */
+        .page.back-cover {
+            background-color: var(--swiggy-black);
+            color: white;
+            text-align: center;
+        }
+        .page.back-cover h2 {
+            color: var(--swiggy-orange);
+            border-bottom: none;
+        }
+        .page.back-cover a {
+            display: inline-block;
+            font-size: 1.2rem;
+            margin: 10px 15px;
+            color: white;
+            border: 1px solid white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        .page.back-cover a:hover {
+            background-color: var(--swiggy-orange);
+            border-color: var(--swiggy-orange);
+        }
+        
+        /* Utility class for images */
+        .page img.full-width {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        /* Hard cover effect */
+        #magazine .hard {
+            background: #cdcdcd;
+        }
+        #magazine .page-wrapper {
+            -webkit-perspective: 2000px;
+            -moz-perspective: 2000px;
+            -ms-perspective: 2000px;
+            -o-perspective: 2000px;
+            perspective: 2000px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="magazine-container">
+        <div id="magazine">
+        
+            <div class="page cover hard">
+                <h3>Swiggy CREW Application</h3>
+                <h1 style="margin-top: 40px;">VISHNU PRIYA G</h1>
+                <p class="job-title">Curator, Travel Content</p>
+                <p>A Portfolio of Curated Journeys, <br> Experiential Design, and Storytelling.</p>
+                <p class="disclaimer">(An interactive application)</p>
+            </div>
+
+            <div class="page">
+                <h2>Editor's Note</h2>
+                <h3>I Don't Just Plan Trips. I Curate Narratives.</h3>
+                <p>For me, travel isn't just an itinerary; it's the moment a story comes alive.</p>
+                <p>It’s standing at the Devil's Punch Bowl in Oregon, realizing you're watching whales swim by. It's stumbling upon the Sea Lion Caves, watching cormorants and baby sea lions, and feeling like an NGC documentary has unfolded in front of your eyes. It's the inner voice of Steve Irwin whispering from your childhood.</p>
+                <p>I am a travel curator by DNA. I hold a <strong>Gold-Medal MBA in Tourism</strong>, and my passion is designing those "wow" moments. From curating bespoke journeys for HNI clients to launching South India's first "Hop-On Hop-Off" bus tour, I build experiences.</p>
+                <p>I understand the high-touch, premium lens this role requires [cite: 11], and I have the design  and GTM skills to bring it to life.</p>
+            </div>
+
+            <div class="page">
+                <h2>The Curator's Toolkit</h2>
+                
+                <h3>Core Credentials</h3>
+                <ul>
+                    <li><strong>MBA, Tourism & Travel Management (Gold Medalist)</strong><br>Indian Institute of Tourism & Travel Management</li>
+                    <li><strong>Academic Research:</strong> Authored "Slow Tourism in Slovenia," analyzing emerging experiential travel trends[cite: 16].</li>
+                </ul>
+
+                <h3>Key Competencies</h3>
+                <ul>
+                    <li>Bespoke Itinerary Curation & Design [cite: 13]</li>
+                    <li>Luxury & HNI Client CX [cite: 25]</li>
+                    <li>Visual Storytelling & Copywriting [cite: 22]</li>
+                    <li>Brand-Aligned Asset Creation [cite: 13]</li>
+                    <li>Offbeat & Experiential Research [cite: 11]</li>
+                </ul>
+                
+                <h3>Design & Tech Stack</h3>
+                <ul>
+                    <li><strong>Design:</strong> Canva, PowerPoint, Figma [cite: 14, 21, 100, 101]</li>
+                    <li><strong>GTM & Automation:</strong> HubSpot, Zoho [cite: 85, 87]</li>
+                    <li><strong>Analytics:</strong> Google Analytics, SEMrush [cite: 93, 94]</li>
+                </ul>
+            </div>
+
+            <div class="page">
+                <h2>Featured Journeys (1/3)</h2>
+                <h3>Role: Team Associate - Operations</h3>
+                <p style="font-weight: 600; color: var(--swiggy-black);">SITA (Luxury & HNI Curation)</p>
+                <p>I owned the end-to-end travel experience for high-net-worth (HNI) travellers from 5 global markets (France, UK, Canada, Germany, Australia)[cite: 79, 139].</p>
+                <ul>
+                    <li>Designed and curated bespoke, "offbeat" journeys for luxury partners like Audley, Kensington, and Verde[cite: 139].</li>
+                    <li>Shaped the premium brand voice across all client-facing itineraries, proposals, and partner communications[cite: 141].</li>
+                    <li>Delivered a <strong>98% CSAT score</strong> by designing flawless, high-value CX flows[cite: 82, 140].</li>
+                </ul>
+                <p><strong>(Matches JD for:</strong> <em>Luxury/Lifestyle Sector Experience [cite: 25], Curated Experiences [cite: 5]</em><strong>)</strong></p>
+            </div>
+
+            <div class="page">
+                <h2>Featured Journeys (2/3)</h2>
+                <h3>Role: Operations Executive</h3>
+                <p style="font-weight: 600; color: var(--swiggy-black);">GoIndia Holiday (GTM & Launch)</p>
+                <p>Inspired by London's iconic red bus, I designed, developed, and launched the first-ever "Hop-On Hop-Off" city tour for South India[cite: 143].</p>
+                <ul>
+                    <li>Led the complete GTM launch, from initial concept and itinerary design to writing all web content and promotional assets[cite: 143].</li>
+                    <li>Drove a <strong>2.1x increase in inbound leads</strong> within 90 days by creating compelling, "experience-led content"[cite: 143].</li>
+                </ul>
+                <p><strong>(Matches JD for:</strong> <em>Unique Getaways [cite: 16], Itinerary Decks [cite: 13]</em><strong>)</strong></p>
+            </div>
+            
+            <div class="page">
+                <h2>Featured Journeys (3/3)</h2>
+                <h3>Role: Project Consultant</h3>
+                <p style="font-weight: 600; color: var(--swiggy-black);">Balmer & Lawrie (Govt. of India)</p>
+                <p>As a consultant, I was responsible for designing and mapping official itineraries for Government of India programs.</p>
+                <ul>
+                    <li>Researched and developed frameworks for experiential travel aimed at inbound HNI tourists from Europe.</li>
+                    <li>Created detailed, multi-day itineraries focused on unique cultural and "offbeat experiences"[cite: 11].</li>
+                </ul>
+                <p><strong>(Matches JD for:</strong> <em>Research & Curation [cite: 11], Destination Guides [cite: 13]</em><strong>)</strong></p>
+            </div>
+
+            <div class="page">
+                <h2>Field Notes</h2>
+                <h3>The 3-Month "Story-Finding" Mission</h3>
+                <p>My 2018-2020 travel break was my personal "find the story" mission[cite: 135, 136]. It's one thing to research trends; it's another to live them.</p>
+                <p><strong>The Mission:</strong> A multi-state U.S. road trip to find the stories between the destinations.</p>
+                <ul>
+                    <li><strong>Childhood Dream Realized:</strong> Finally experiencing the tactile, immersive storytelling of Universal's Harry Potter world.</li>
+                    <li><strong>Finding the "Wow" Moment:</strong> Stumbling upon the Sea Lion Caves in Oregon. A real-life NGC documentary, complete with cormorants, baby sea lions, and the roar of the Pacific.</li>
+                </ul>
+                <p>This is what I bring to CREW. The ability to find the magic and translate it into a "visually compelling travel asset" [cite: 9] that delivers that same feeling to a client.</p>
+                </div>
+            
+            <div class="page">
+                <h2>The Differentiator</h2>
+                <h3>I Don't Just Curate. I Convert.</h3>
+                <p>My 8+ years in B2B Fintech were a masterclass in GTM strategy, brand storytelling, and funnel optimization[cite: 65, 68, 73].</p>
+                <p>This experience is my secret weapon.</p>
+                <p>I can <em>curate</em> the perfect, offbeat getaway[cite: 11, 139]. And I also know how to <em>market</em> it, <em>measure</em> its impact, and turn a client's dream into a data-backed success story.</p>
+                <ul>
+                    <li>Brand & GTM Strategy [cite: 57, 64]</li>
+                    <li>Demand Generation & Funnel Optimization [cite: 52, 53]</li>
+                    <li>Campaign Analytics & Paid Media [cite: 55, 56]</li>
+                    <li>Stakeholder & CXO Comms [cite: 58, 61]</li>
+                </ul>
+            </div>
+
+            <div class="page">
+                <h2>Itinerary Samples</h2>
+                <p>This is a perfect place to embed or link to your itinerary design work.</p>
+                <p>You can add a screenshot of your PDF and link it, or just provide text links.</p>
+                
+                <p style="margin-top: 50px; text-align: center;">(Please see attached files for my design portfolio)</p>
+            </div>
+            
+            <div class="page back-cover hard">
+                <h2>Let's Build Something Exceptional.</h2>
+                <p style="font-size: 1.1rem; margin-top: 50px;">Thank you for your consideration.</p>
+                <div style="margin-top: 40px;">
+                    <a href="mailto:vishnupriya0192@gmail.com" target="_blank">Email Me</a> [cite: 36]
+                    <a href="https://www.linkedin.com/in/vpg" target="_blank">LinkedIn</a> [cite: 37]
+                    <a href="path/to/your/VPG_Resume_2025.pdf" target="_blank">View (Boring) Resume</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        $(window).ready(function() {
+            $('#magazine').turn({
+                // Options
+                display: 'double', // Show two pages at a time
+                acceleration: true, // Hardware acceleration
+                gradients: true, // Show gradients during curl
+                elevation: 50, // Shadow elevation
+                when: {
+                    turned: function(e, page) {
+                        // console.log('Current view: ', $(this).turn('view'));
+                    }
+                }
+            });
+        });
+
+        // Optional: Allow resizing the magazine
+        $(window).bind('resize', function() {
+            var width = $('#magazine-container').width();
+            var height = $('#magazine-container').height();
+            
+            $('#magazine').turn('size', width, height);
+        });
+    </img-responsive>
+    </script>
+
+</body>
+</html>
