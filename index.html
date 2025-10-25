@@ -1,489 +1,777 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Vishnu Priya G - Swiggy CREW Application</title>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script type="text/javascript" src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/4.1.0/turn.min.js"></script>
-
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-
+    <title>Vishnu Priya G - Swiggy CREW Travel Curator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --swiggy-orange: #FC8019;
-            --swiggy-black: #1c1c1c;
-            --swiggy-grey: #4a4a4a;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #e0e0e0; /* Lighter grey background */
-            display: flex;
-            flex-direction: column; /* Stack magazine and buttons */
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
         }
 
-        /* Magazine container */
-        #magazine-container {
-            width: 1000px;
-            height: 700px;
-            margin-bottom: 20px; /* Space for buttons */
+        .page-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 1000;
         }
 
-        #magazine {
-            width: 1000px;
-            height: 700px;
-            box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+        .book-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px 100px;
         }
 
-        /* All pages */
-        #magazine .page {
-            width: 500px;
-            height: 700px;
-            background-color: white;
-            box-sizing: border-box;
-            padding: 45px;
+        .page {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+            min-height: 600px;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-content {
+            padding: 60px;
+        }
+
+        /* Page 1: Cover */
+        .cover {
+            background: linear-gradient(135deg, #1c1c1c 0%, #2a2a2a 100%);
             display: flex;
             flex-direction: column;
-            overflow: hidden; /* Prevent content spill */
-        }
-
-        /* Page content styling */
-        .page h2 {
-            font-family: 'Playfair Display', serif; /* More editorial font */
-            font-size: 2.2rem;
-            color: var(--swiggy-orange);
-            margin-top: 0;
-            margin-bottom: 20px;
-            border-bottom: 2px solid var(--swiggy-orange);
-            padding-bottom: 10px;
-            width: 100%;
-        }
-        
-        .page h3 {
-            font-size: 1.3rem;
-            color: var(--swiggy-black);
-            font-weight: 600;
-            margin-top: 10px;
-            margin-bottom: 5px;
-        }
-
-        .page p, .page li {
-            font-size: 0.95rem;
-            color: var(--swiggy-grey);
-            line-height: 1.7;
-            text-align: left;
-        }
-        
-        .page ul {
-            list-style-type: none;
-            padding-left: 0;
-            width: 100%;
-        }
-        
-        .page li {
-            position: relative;
-            padding-left: 25px;
-            margin-bottom: 12px;
-        }
-        
-        .page li:before {
-            content: '✓'; /* Checkmark for a premium feel */
-            color: var(--swiggy-orange);
-            font-weight: bold;
-            display: inline-block;
-            position: absolute;
-            left: 0;
-            font-size: 1.1rem;
-        }
-        
-        .page a {
-            color: var(--swiggy-orange);
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        /* --- Page-Specific Styles --- */
-
-        /* Cover Page (Page 1) */
-        .page.cover {
-            background-color: var(--swiggy-black);
-            color: white;
-            text-align: center;
             justify-content: center;
+            align-items: center;
+            text-align: center;
+            min-height: 600px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 20px;
         }
-        .page.cover h1 {
-            font-family: 'Playfair Display', serif;
-            color: white;
-            font-size: 3.5rem;
-            margin: 20px 0 0 0;
+
+        .cover::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(252,128,25,0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
         }
-        .page.cover h3 {
-            color: var(--swiggy-orange);
-            font-size: 1.5rem;
-            font-weight: 400;
-            margin: 0;
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
         }
-        .page.cover .job-title {
-            font-size: 1.2rem;
-            color: #ccc;
-            letter-spacing: 2px;
+
+        .cover-label {
+            color: #FC8019;
+            font-size: 14px;
+            letter-spacing: 3px;
             text-transform: uppercase;
-            margin: 40px 0;
+            font-weight: 600;
+            margin-bottom: 40px;
+            animation: fadeInDown 1s ease;
+            position: relative;
+            z-index: 1;
         }
-        .page.cover .disclaimer {
-            font-size: 0.8rem;
-            color: #888;
+
+        .cover-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 72px;
+            font-weight: 900;
+            color: white;
+            line-height: 1.2;
+            margin-bottom: 20px;
+            animation: fadeInUp 1s ease 0.3s both;
+            text-shadow: 0 4px 20px rgba(252,128,25,0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .cover-subtitle {
+            color: #FC8019;
+            font-size: 18px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            font-weight: 300;
+            animation: fadeInUp 1s ease 0.6s both;
+            position: relative;
+            z-index: 1;
+        }
+
+        .cover-hint {
             position: absolute;
             bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
+            right: 40px;
+            color: rgba(255,255,255,0.5);
+            font-size: 12px;
+            font-style: italic;
+            animation: bounce 2s ease infinite;
+            z-index: 1;
         }
-        .page.cover .disclaimer strong {
-            color: #fff;
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
 
         /* Page 2: Editor's Note */
-        .page .pull-quote {
+        .editors-note h1 {
             font-family: 'Playfair Display', serif;
-            font-size: 1.8rem;
-            color: var(--swiggy-orange);
-            line-height: 1.4;
-            border-left: 4px solid var(--swiggy-orange);
-            padding-left: 20px;
-            margin: 20px 0;
-            font-style: italic;
-        }
-        
-        /* Page 3: Toolkit */
-        .page.toolkit h3 {
-             border-top: 1px solid #eee;
-             padding-top: 20px;
-             margin-top: 25px;
+            font-size: 42px;
+            color: #1c1c1c;
+            margin-bottom: 40px;
+            line-height: 1.3;
         }
 
-        /* Page 7: Field Notes (Image Page) */
-        .page.field-notes .image-placeholder {
-            width: 100%;
-            height: 250px;
-            background-color: #ddd;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--swiggy-grey);
-            font-style: italic;
-            border-radius: 5px;
+        .editors-note p {
+            font-size: 17px;
+            line-height: 1.8;
+            color: #444;
             margin-bottom: 20px;
         }
 
-        /* Page 9: Samples (2-column layout) */
-        .page.samples .column-container {
+        .editors-note .highlight {
+            background: linear-gradient(180deg, transparent 60%, rgba(252,128,25,0.3) 60%);
+            font-weight: 600;
+            color: #1c1c1c;
+        }
+
+        /* Page 3: Toolkit */
+        .toolkit h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 48px;
+            color: #1c1c1c;
+            margin-bottom: 50px;
+            text-align: center;
+        }
+
+        .toolkit-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        .toolkit-section h3 {
+            color: #FC8019;
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .toolkit-section p {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .toolkit-section strong {
+            color: #1c1c1c;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .skill-tags {
             display: flex;
-            gap: 30px;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
         }
-        .page.samples .column {
-            flex: 1;
+
+        .skill-tag {
+            background: #FC8019;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
         }
-        .page.samples .image-placeholder-small {
+
+        /* Featured Stories */
+        .featured-story h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 38px;
+            color: #1c1c1c;
+            margin-bottom: 15px;
+        }
+
+        .featured-story h2 {
+            color: #FC8019;
+            font-size: 18px;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        .featured-story p {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #444;
+            margin-bottom: 20px;
+        }
+
+        .story-image {
             width: 100%;
-            height: 180px;
-            background-color: #ddd;
-            border-radius: 5px;
+            height: 250px;
+            background: linear-gradient(135deg, #FC8019 0%, #ff9d4d 100%);
+            border-radius: 12px;
+            margin-bottom: 30px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--swiggy-grey);
-            font-style: italic;
-            margin-bottom: 10px;
-        }
-
-        /* Back Cover (Last Page) */
-        .page.back-cover {
-            background-color: var(--swiggy-black);
             color: white;
+            font-size: 20px;
+            font-weight: 600;
             text-align: center;
-            justify-content: center;
+            padding: 20px;
         }
-        .page.back-cover h2 {
-            font-family: 'Playfair Display', serif;
-            color: var(--swiggy-orange);
-            border-bottom: none;
-            font-size: 2.5rem;
-        }
-        .page.back-cover a {
-            display: inline-block;
-            font-size: 1.1rem;
-            margin: 10px 15px;
+
+        .quote-box {
+            background: #FC8019;
             color: white;
-            border: 1px solid white;
-            padding: 12px 22px;
-            border-radius: 30px; /* Pill shape */
-            transition: all 0.3s ease;
-        }
-        .page.back-cover a:hover {
-            background-color: var(--swiggy-orange);
-            border-color: var(--swiggy-orange);
-        }
-
-        /* Page number styling */
-        .page .page-number {
-            position: absolute;
-            bottom: 20px;
-            right: 45px;
-            font-size: 0.9rem;
-            color: #aaa;
+            padding: 30px;
+            border-radius: 12px;
+            font-size: 20px;
+            font-weight: 600;
+            line-height: 1.6;
+            margin: 30px 0;
+            font-style: italic;
         }
 
-        /* Corner peel effect */
-        .page::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 0;
-            height: 0;
-            border-style: solid;
-            border-width: 0 0 50px 50px; /* Creates a triangle */
-            border-color: transparent transparent #e0e0e0 transparent;
-            transition: border-width 0.3s ease;
-        }
-        .page:hover::after {
-            border-width: 0 0 60px 60px; /* Lifts corner on hover */
-        }
-        .page.cover::after, .page.back-cover::after {
-             border: none; /* No peel on hard covers */
+        .result-box {
+            background: #1c1c1c;
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            text-align: center;
+            margin-top: 20px;
         }
 
-        /* --- Navigation Buttons --- */
-        #nav-buttons {
+        /* Centerfold */
+        .centerfold {
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), 
+                        linear-gradient(135deg, #FC8019 0%, #ff6b35 100%);
             display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 600px;
+            border-radius: 20px;
+        }
+
+        .centerfold-box {
+            background: rgba(255,255,255,0.95);
+            padding: 50px;
+            border-radius: 20px;
+            max-width: 700px;
+            backdrop-filter: blur(10px);
+        }
+
+        .centerfold-box h3 {
+            color: #FC8019;
+            font-size: 14px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .centerfold-box p {
+            font-size: 18px;
+            line-height: 1.8;
+            color: #1c1c1c;
+            margin-bottom: 15px;
+        }
+
+        /* Differentiator */
+        .differentiator {
+            background: #1c1c1c;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+            min-height: 600px;
+            border-radius: 20px;
+            padding: 60px;
+        }
+
+        .differentiator h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 52px;
+            font-weight: 700;
+            margin-bottom: 40px;
+            line-height: 1.3;
+        }
+
+        .differentiator p {
+            font-size: 20px;
+            line-height: 1.8;
+            margin-bottom: 15px;
+            color: #ddd;
+        }
+
+        .differentiator .skill-tags {
+            justify-content: center;
+            margin-top: 50px;
+        }
+
+        /* Portfolio */
+        .portfolio h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 42px;
+            color: #1c1c1c;
+            margin-bottom: 50px;
+            text-align: center;
+        }
+
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .portfolio-item {
+            border: 2px solid #FC8019;
+            border-radius: 12px;
+            padding: 30px;
+            transition: transform 0.3s ease;
+        }
+
+        .portfolio-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(252,128,25,0.2);
+        }
+
+        .portfolio-item h3 {
+            color: #FC8019;
+            font-size: 20px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .portfolio-item p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .portfolio-link {
+            display: inline-block;
+            background: #FC8019;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background 0.3s ease;
+        }
+
+        .portfolio-link:hover {
+            background: #e67315;
+        }
+
+        .portfolio-extra {
+            padding: 30px;
+            background: #f9f9f9;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        /* Back Cover */
+        .back-cover {
+            background: linear-gradient(135deg, #1c1c1c 0%, #2a2a2a 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            min-height: 600px;
+            border-radius: 20px;
+        }
+
+        .back-cover h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 52px;
+            color: white;
+            margin-bottom: 40px;
+            line-height: 1.3;
+        }
+
+        .back-cover h2 {
+            color: #FC8019;
+            font-size: 32px;
+            margin-bottom: 50px;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        .contact-links {
+            display: flex;
+            flex-direction: column;
             gap: 20px;
         }
-        .nav-button {
-            background-color: var(--swiggy-black);
+
+        .contact-link {
             color: white;
-            border: none;
-            padding: 12px 25px;
-            font-family: 'Poppins', sans-serif;
-            font-size: 1rem;
-            font-weight: 600;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .nav-button:hover {
-            background-color: var(--swiggy-orange);
+            text-decoration: none;
+            font-size: 18px;
+            transition: color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
+        .contact-link:hover {
+            color: #FC8019;
+        }
+
+        /* Navigation */
+        .nav-controls {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: #FC8019;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(252,128,25,0.3);
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: #e67315;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(252,128,25,0.4);
+        }
+
+        .nav-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .page-content {
+                padding: 40px 30px;
+            }
+            .cover-name {
+                font-size: 48px;
+            }
+            .toolkit-grid, .portfolio-grid {
+                grid-template-columns: 1fr;
+            }
+            .differentiator h1 {
+                font-size: 36px;
+            }
+        }
     </style>
 </head>
 <body>
-
-    <div id="magazine-container">
-        <div id="magazine">
-        
-            <div class="page cover hard">
-                <h3>Swiggy CREW Application</h3>
-                <h1>VISHNU PRIYA G</h1>
-                <p class="job-title">Curator, Travel Content</p>
-                <p>A Portfolio of Curated Journeys, <br> Experiential Design, and Storytelling.</p>
-                <p class="disclaimer">
-                    (An interactive application)
-                    <br><strong>Click the corners or use the buttons below to turn pages.</strong>
-                </p>
+    <div class="page-indicator">Page <span id="currentPage">1</span> of 10</div>
+    
+    <div class="book-container">
+        <!-- Page 1: Cover -->
+        <div class="page active" id="page1">
+            <div class="cover">
+                <div class="cover-label">✈️ An Application for Swiggy CREW</div>
+                <h1 class="cover-name">VISHNU<br>PRIYA G</h1>
+                <p class="cover-subtitle">The Travel Curator Dossier</p>
+                <div class="cover-hint">Click below to flip through the magic →</div>
             </div>
+        </div>
 
-            <div class="page">
-                <h2>Editor's Note</h2>
-                <h3>I Don't Just Plan Trips. I Curate Narratives.</h3>
-                <p>For me, travel isn't just an itinerary; it's the moment a story comes alive. It’s the inner voice of Steve Irwin whispering from your childhood.</p>
-                
-                <p class="pull-quote">
-                    "It's stumbling upon the Sea Lion Caves... feeling like an NGC documentary has unfolded in front of your eyes."
-                </p>
-
-                <p>I am a travel curator by DNA. I hold a <strong>Gold-Medal MBA in Tourism</strong>, and my passion is designing those "wow" moments. From curating bespoke journeys for HNI clients to launching South India's first "Hop-On Hop-Off" bus tour, I build experiences.</p>
-                <p>I understand the high-touch, premium lens this role requires, and I have the design and GTM skills to bring it to life.</p>
-                <span class="page-number">2</span>
+        <!-- Page 2: Editor's Note -->
+        <div class="page" id="page2">
+            <div class="page-content editors-note">
+                <h1>I Don't Just Plan Trips.<br>I Curate Moments That Make You Go "Whoa."</h1>
+                <p>Travel, for me, isn't a checklist. It's the <span class="highlight">gasp when you realize whales are swimming past the Devil's Punch Bowl</span>. It's stumbling into Sea Lion Caves and feeling like you've stepped into a live National Geographic episode—baby sea lions, cormorants, the works.</p>
+                <p>It's that inner voice of Steve Irwin whispering from your childhood: <em>"Crikey, would you look at that!"</em></p>
+                <p><strong>That's the "wow" I architect.</strong></p>
+                <p>By day, I'm a brand strategist. By DNA, I'm a travel curator. I hold a <span class="highlight">Gold Medal MBA in Tourism & Travel Management</span> and have spent years crafting high-touch, luxury experiences—from HNI journeys across 5 global markets to launching South India's first "Hop-On Hop-Off" city tour.</p>
+                <p>I speak the language of premium, aesthetically sharp curation that Swiggy CREW demands. And I've got the GTM chops and design sensibility to bring every itinerary to life.</p>
             </div>
+        </div>
 
-            <div class="page toolkit">
-                <h2>The Curator's Toolkit</h2>
-                
-                <h3>Core Credentials</h3>
-                <ul>
-                    <li><strong>MBA, Tourism & Travel Management (Gold Medalist)</strong><br>Indian Institute of Tourism & Travel Management</li>
-                    <li><strong>Academic Research:</strong> Authored "Slow Tourism in Slovenia," analyzing emerging experiential travel trends.</li>
-                </ul>
-
-                <h3>Key Competencies</h3>
-                <ul>
-                    <li>Bespoke Itinerary Curation & Design</li>
-                    <li>Luxury & HNI Client CX</li>
-                    <li>Visual Storytelling & Copywriting</li>
-                    <li>Brand-Aligned Asset Creation</li>
-                    <li>Offbeat & Experiential Research</li>
-                </ul>
-                
-                <h3>Design & Tech Stack</h3>
-                <ul>
-                    <li><strong>Design:</strong> Canva, PowerPoint, Figma</li>
-                    <li><strong>GTM & Automation:</strong> HubSpot, Zoho</li>
-                </ul>
-                <span class="page-number">3</span>
-            </div>
-
-            <div class="page">
-                <h2>Featured Journeys (1/3)</h2>
-                <h3>Role: Team Associate - Operations</h3>
-                <p style="font-weight: 600; color: var(--swiggy-black);">SITA (Luxury & HNI Curation)</p>
-                <p>I owned the end-to-end travel experience for high-net-worth (HNI) travellers from 5 global markets (France, UK, Canada, Germany, Australia).</p>
-                <ul>
-                    <li>Designed and curated bespoke, "offbeat" journeys for luxury partners like Audley, Kensington, and Verde.</li>
-                    <li>Shaped the premium brand voice across all client-facing itineraries, proposals, and partner communications.</li>
-                    <li>Delivered a <strong>98% CSAT score</strong> by designing flawless, high-value CX flows.</li>
-                </ul>
-                <p><strong>(Matches JD for:</strong> <em>Luxury/Lifestyle Sector Experience, Curated Experiences</em><strong>)</strong></p>
-                <span class="page-number">4</span>
-            </div>
-
-            <div class="page">
-                <h2>Featured Journeys (2/3)</h2>
-                <h3>Role: Operations Executive</h3>
-                <p style="font-weight: 600; color: var(--swiggy-black);">GoIndia Holiday (GTM & Launch)</p>
-                <p>Inspired by London's iconic red bus, I designed, developed, and launched the first-ever "Hop-On Hop-Off" city tour for South India.</p>
-                <ul>
-                    <li>Led the complete GTM launch, from initial concept and itinerary design to writing all web content and promotional assets.</li>
-                    <li>Drove a <strong>2.1x increase in inbound leads</strong> within 90 days by creating compelling, "experience-led content".</li>
-                </ul>
-                <p><strong>(Matches JD for:</strong> <em>Unique Getaways, Itinerary Decks</em><strong>)</strong></p>
-                <span class="page-number">5</span>
-            </div>
-            
-            <div class="page">
-                <h2>Featured Journeys (3/3)</h2>
-                <h3>Role: Project Consultant</h3>
-                <p style="font-weight: 600; color: var(--swiggy-black);">Balmer & Lawrie (Govt. of India)</p>
-                <p>As a consultant, I was responsible for designing and mapping official itineraries for Government of India programs.</p>
-                <ul>
-                    <li>Researched and developed frameworks for experiential travel aimed at inbound HNI tourists from Europe.</li>
-                    <li>Created detailed, multi-day itineraries focused on unique cultural and "offbeat experiences".</li>
-                </ul>
-                <p><strong>(Matches JD for:</strong> <em>Research & Curation, Destination Guides</em><strong>)</strong></p>
-                <span class="page-number">6</span>
-            </div>
-
-            <div class="page field-notes">
-                <h2>Field Notes</h2>
-                <h3>The 3-Month "Story-Finding" Mission</h3>
-                
-                <div class="image-placeholder">
-                    (Add your photo from Oregon / Sea Lion Caves here)
-                </div>
-
-                <p>My 2018-2020 travel break was my personal "find the story" mission. It's one thing to research trends; it's another to live them.</p>
-                <ul>
-                    <li><strong>The Mission:</strong> A multi-state U.S. road trip (from Universal's Harry Potter world to the Oregon coast).</li>
-                    <li><strong>The "Wow" Moment:</strong> Stumbling upon the Sea Lion Caves. A real-life NGC documentary, complete with cormorants, baby sea lions, and the roar of the Pacific.</li>
-                </ul>
-                <p>This is what I bring to CREW. The ability to find the magic and translate it into a "visually compelling travel asset."</p>
-                <span class="page-number">7</span>
-            </div>
-            
-            <div class="page" style="background-color: #f8f8f8;">
-                <h2>The Differentiator</h2>
-                <h3>I Don't Just Curate. I Convert.</h3>
-                <p>My 8+ years in B2B Fintech were a masterclass in GTM strategy, brand storytelling, and funnel optimization.</p>
-                <p style="font-weight: 600; color: var(--swiggy-black);">This experience is my secret weapon.</p>
-                <p>I can <em>curate</em> the perfect, offbeat getaway. And I also know how to <em>market</em> it, <em>measure</em> its impact, and turn a client's dream into a data-backed success story.</p>
-                <ul>
-                    <li>Brand & GTM Strategy</li>
-                    <li>Demand Generation & Funnel Optimization</li>
-                    <li>Campaign Analytics & Paid Media</li>
-                    <li>Stakeholder & CXO Comms</li>
-                </ul>
-                <span class="page-number">8</span>
-            </div>
-
-            <div class="page samples">
-                <h2>Portfolio Samples</h2>
-                <p>A look at the "aesthetically sharp, brand-aligned visual content" (as requested in the JD) I've created.</p>
-                
-                <div class="column-container">
-                    <div class="column">
-                        <h3>Sample 1: Luxury Itinerary</h3>
-                        <div class="image-placeholder-small">(Add screenshot of Itinerary 1)</div>
-                        <p>A brief description of this itinerary, who it was for, etc.</p>
-                        <a href="your-itinerary-1.pdf" target="_blank">View Full PDF &rarr;</a>
+        <!-- Page 3: Toolkit -->
+        <div class="page" id="page3">
+            <div class="page-content toolkit">
+                <h1>The Curator's Toolkit</h1>
+                <div class="toolkit-grid">
+                    <div class="toolkit-section">
+                        <h3>🎓 Core Credentials</h3>
+                        <p><strong>MBA, Tourism & Travel Management</strong><br>Gold Medalist | Indian Institute of Tourism & Travel Management, Govt. of India</p>
+                        <p><strong>B.Tech, Engineering</strong><br>Karunya University</p>
                     </div>
-                    <div class="column">
-                        <h3>Sample 2: Offbeat Guide</h3>
-                        <div class="image-placeholder-small">(Add screenshot of Itinerary 2)</div>
-                        <p>A brief description of this guide and its unique angle.</p>
-                        <a href="your-itinerary-2.pdf" target="_blank">View Full PDF &rarr;</a>
+                    <div class="toolkit-section">
+                        <h3>💡 Key Competencies</h3>
+                        <p>✦ Bespoke Itinerary Curation<br>✦ Luxury & HNI Client CX<br>✦ Visual Storytelling & Copywriting<br>✦ GTM & Content Strategy<br>✦ Offbeat & Experiential Research</p>
+                    </div>
+                    <div class="toolkit-section">
+                        <h3>📚 Academic Chops</h3>
+                        <p><strong>Research Paper:</strong> "Slow Tourism in Slovenia"<br><em>A deep dive into emerging travel trends and the shift toward experiential journeys.</em></p>
+                        <p style="font-size: 13px; color: #FC8019;">✓ Matches JD: "Stay updated on emerging travel trends"</p>
+                    </div>
+                    <div class="toolkit-section">
+                        <h3>🎨 Design Stack</h3>
+                        <div class="skill-tags">
+                            <span class="skill-tag">Canva</span>
+                            <span class="skill-tag">PowerPoint</span>
+                            <span class="skill-tag">Figma</span>
+                            <span class="skill-tag">Google Slides</span>
+                        </div>
                     </div>
                 </div>
-                <span class="page-number">9</span>
             </div>
-            
-            <div class="page back-cover hard">
-                <h2>Let's Build Something Exceptional.</h2>
-                <p style="font-size: 1.1rem; margin-top: 50px;">Thank you for your consideration.</p>
-                <div style="margin-top: 40px;">
-                    <a href="mailto:vishnupriya0192@gmail.com" target="_blank">Email Me</a>
-                    <a href="https://www.linkedin.com/in/vpg" target="_blank">LinkedIn</a>
-                    <a href="VPG_Resume_2025 (M).pdf" target="_blank">View Resume</a>
+        </div>
+
+        <!-- Page 4: Featured Story 1 -->
+        <div class="page" id="page4">
+            <div class="page-content featured-story">
+                <div class="story-image">🥂 Luxury Travel Destination<br>Paris · Safaris · Bespoke Experiences</div>
+                <h1>Chapter 1: The Luxury Lens</h1>
+                <h2>Curating High-Touch Journeys for HNI Clients at SITA</h2>
+                <p>At SITA, I owned the end-to-end travel experience for high-net-worth individuals from 5 global markets—France, UK, Canada, Australia, and the US. This role demanded obsessive attention to detail and flawless execution.</p>
+                <p><strong>Key Projects:</strong></p>
+                <p>→ Designed offbeat, bespoke journeys for luxury partners like Audley Travel and Kensington Tours.<br>
+                → Shaped the premium brand voice across all client-facing itineraries and proposals.<br>
+                → Delivered a <span class="highlight">98% CSAT score</span> by designing seamless, high-value customer experiences.</p>
+                <p>This wasn't just planning trips. It was engineering delight at every touchpoint.</p>
+            </div>
+        </div>
+
+        <!-- Page 5: Featured Story 2 -->
+        <div class="page" id="page5">
+            <div class="page-content featured-story">
+                <h1>Chapter 2: The GTM Launch</h1>
+                <h2>Building an Experience From Scratch at GoIndia Holiday</h2>
+                <p>Ever heard of South India's first "Hop-On Hop-Off" city tour? That was me. Inspired by London's iconic red buses, I didn't just conceptualize this—I <em>built</em> it.</p>
+                <div class="quote-box">
+                    "I led the complete GTM: concept, itinerary mapping, route optimization, and writing every piece of web content and promotional collateral."
+                </div>
+                <p>This was pure 0-to-1 creation. From identifying key city stops to crafting the narrative that would make tourists feel like insiders, I designed the entire customer journey.</p>
+                <div class="result-box">
+                    📈 Result: 2.1x increase in inbound leads within 90 days
                 </div>
             </div>
+        </div>
 
+        <!-- Page 6: Featured Story 3 -->
+        <div class="page" id="page6">
+            <div class="page-content featured-story">
+                <h1>Chapter 3: The Deep Cuts</h1>
+                <h2>Experiential Design for Government of India at Balmer & Lawrie</h2>
+                <p>As a consultant, I was entrusted with designing and mapping official itineraries for Government of India programs—high-stakes work that required both creativity and precision.</p>
+                <p>My mandate: Research and develop frameworks for <strong>experiential travel</strong> aimed at inbound HNI tourists from Europe. This meant moving beyond simple sightseeing into multi-day, immersive cultural journeys.</p>
+                <p>Think: temple stays in Tamil Nadu, spice plantation trails in Kerala, heritage walks through forgotten Rajasthani villages.</p>
+                <div class="story-image">🗺️ Itinerary & Experience Design<br>Multi-Day Cultural Immersions</div>
+                <p>This role sharpened my ability to balance operational feasibility with aspirational storytelling—exactly what premium travel curation demands.</p>
+            </div>
+        </div>
+
+        <!-- Page 7: Centerfold -->
+        <div class="page" id="page7">
+            <div class="centerfold">
+                <div class="centerfold-box">
+                    <h3>🌊 Field Notes: The 3-Month Story-Finding Mission</h3>
+                    <p>My 2018 travel break wasn't a break. It was <strong>field research</strong>.</p>
+                    <p>From fulfilling a childhood dream at Universal's Harry Potter World to discovering that heart-stopping "National Geographic" moment at Oregon's Sea Lion Caves, I was hunting for the <em>wow</em> factor.</p>
+                    <p>That's what I bring to CREW: <strong>The ability to find the magic in a place and translate it into a visually compelling, emotionally resonant travel asset.</strong></p>
+                    <p>Travel isn't just my job. It's my lens for seeing the world.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 8: Differentiator -->
+        <div class="page" id="page8">
+            <div class="differentiator">
+                <h1>My Secret Weapon?<br>(It's Fintech.)</h1>
+                <p>You'll have 100 travel enthusiasts applying for this role.</p>
+                <p>But how many also have <strong>8+ years in B2B brand strategy, GTM execution, and funnel optimization?</strong></p>
+                <p>I'm not just a curator. I'm a <em>strategist</em>.</p>
+                <p>I can design the dream getaway.<br><strong>AND</strong> I know how to market it, measure it, and turn a client's "wow" moment into a data-backed success story.</p>
+                <div class="skill-tags">
+                    <span class="skill-tag">GTM Strategy</span>
+                    <span class="skill-tag">Demand Gen</span>
+                    <span class="skill-tag">Campaign Analytics</span>
+                    <span class="skill-tag">Brand Storytelling</span>
+                    <span class="skill-tag">Content Marketing</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 9: Portfolio -->
+        <div class="page" id="page9">
+            <div class="page-content portfolio">
+                <h1>The Proof Is in the Portfolio</h1>
+                <div class="portfolio-grid">
+                    <div class="portfolio-item">
+                        <h3>🇺🇸 Sample 1: The Great American Road Trip</h3>
+                        <p>A 20-day, multi-state itinerary focused on "Postcard Sunsets" and offbeat discoveries—like the Devil's Punch Bowl, Sea Lion Caves, and hidden coastal gems that don't make it to mainstream guides.</p>
+                        <a href="#" class="portfolio-link">View Full Itinerary →</a>
+                    </div>
+                    <div class="portfolio-item">
+                        <h3>🇲🇦 Sample 2: Yalla Morocco!</h3>
+                        <p>A 15-day "Medinas & Markets" journey designed for high-touch, experiential HNI clients. From riads in Marrakech to camel treks in the Sahara, this is luxury with a soul.</p>
+                        <a href="#" class="portfolio-link">View Full Itinerary →</a>
+                    </div>
+                </div>
+                <div class="portfolio-extra">
+                    <p style="font-size: 16px; color: #666; margin-bottom: 20px;">Want more samples? I've got case studies, itineraries, and campaign portfolios ready to share.</p>
+                    <a href="mailto:vishnupriya0192@gmail.com" class="portfolio-link">📧 Request Full Portfolio</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 10: Back Cover -->
+        <div class="page" id="page10">
+            <div class="back-cover">
+                <h1>Let's Build Something<br>Exceptional Together.</h1>
+                <h2>VISHNU PRIYA G</h2>
+                <div class="contact-links">
+                    <a href="mailto:vishnupriya0192@gmail.com" class="contact-link">
+                        <span>✉️</span> vishnupriya0192@gmail.com
+                    </a>
+                    <a href="https://linkedin.com/in/vpg" class="contact-link" target="_blank">
+                        <span>💼</span> linkedin.com/in/vpg
+                    </a>
+                    <a href="#" class="contact-link">
+                        <span>📄</span> View (the boring) PDF Resume
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div id="nav-buttons">
-        <button class="nav-button" id="prev-btn">&larr; Previous</button>
-        <button class="nav-button" id="next-btn">Next &rarr;</button>
+    <div class="nav-controls">
+        <button class="nav-btn" id="prevBtn" onclick="prevPage()">← Previous</button>
+        <button class="nav-btn" id="nextBtn" onclick="nextPage()">Next →</button>
     </div>
 
-    <script type="text/javascript">
-        $(window).ready(function() {
-            // Initialize turn.js
-            $('#magazine').turn({
-                display: 'double',
-                acceleration: true,
-                gradients: true,
-                elevation: 50,
-                width: 1000,
-                height: 700,
-                autoCenter: true
-            });
+    <script>
+        let currentPage = 1;
+        const totalPages = 10;
 
-            // "Next" button logic
-            $('#next-btn').click(function(e) {
-                e.preventDefault();
-                $('#magazine').turn('next');
-            });
-
-            // "Previous" button logic
-            $('#prev-btn').click(function(e) {
-                e.preventDefault();
-                $('#magazine').turn('previous');
-            });
+        function updatePageDisplay() {
+            // Update page indicator
+            document.getElementById('currentPage').textContent = currentPage;
             
-            // Optional: Use arrow keys to navigate
-            $(document).keydown(function(e) {
-                if (e.keyCode == 37) { // Left arrow
-                    $('#magazine').turn('previous');
-                } else if (e.keyCode == 39) { // Right arrow
-                    $('#magazine').turn('next');
-                }
-            });
-        });
-    </script>
+            // Update button states
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = currentPage === totalPages;
 
+            // Show only current page
+            for (let i = 1; i <= totalPages; i++) {
+                const page = document.getElementById('page' + i);
+                if (i === currentPage) {
+                    page.classList.add('active');
+                } else {
+                    page.classList.remove('active');
+                }
+            }
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                updatePageDisplay();
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                updatePageDisplay();
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextPage();
+            if (e.key === 'ArrowLeft') prevPage();
+        });
+
+        // Touch/swipe support for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            if (touchEndX < touchStartX - 50) nextPage();
+            if (touchEndX > touchStartX + 50) prevPage();
+        }
+
+        // Initialize
+        updatePageDisplay();
+    </script>
 </body>
 </html>
